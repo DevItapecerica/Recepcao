@@ -21,7 +21,17 @@ const EditableFields = {
     "state",
     "zipCode",
   ],
-  user: ["email", "phone", "photo", "address", "city", "state", "zipCode"],
+  user: [
+    "name",
+    "cpf",
+    "email",
+    "phone",
+    "photo",
+    "address",
+    "city",
+    "state",
+    "zipCode",
+  ],
 };
 
 const MethodesPermissions = {
