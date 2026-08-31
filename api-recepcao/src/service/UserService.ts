@@ -1,17 +1,20 @@
 import bcrypt from "bcryptjs";
 import { Op } from "sequelize";
-import { UserDB } from "../db/model/user.js";
 import {
   UserGenericResponse,
   UserQueryParams,
   GetUserGenericResponse,
   GenericResponse,
   UserRequired,
-} from "../types/userTypes.js";
-import validatorCPF from "../utils/validatorCPF.js";
-import { generateStrongPassword } from "../utils/passwordGenerator.js";
-import { sendMail } from "../utils/sendMail.js";
-import { APPLICATION_ENVORIMENT } from "../config/env.js";
+} from "../core/types/userTypes.js";
+import validatorCPF from "../core/utils/validatorCPF.js";
+import { generateStrongPassword } from "../core/utils/passwordGenerator.js";
+import { sendMail } from "../core/utils/sendMail.js";
+import { APPLICATION_ENVORIMENT } from "../core/config/env.js";
+import db from "../infra/database/sequelize/index.js";
+import { UserDB } from "../infra/database/sequelize/models/user.model.js";
+
+const userSequelizeRepository = db.UserModel;
 
 // Função utilitária para validar role
 const isValidRole = (role: string) =>
@@ -29,17 +32,17 @@ const isDuplicateUser = async (
   if (excludeUuid) {
     where.uuid = { [Op.ne]: excludeUuid };
   }
-  return await UserDB.findOne({ where });
+  return await userSequelizeRepository.findOne({ where });
 };
 
 export class UserService {
   static async findUserByUsername(username: string): Promise<UserDB | null> {
-    const user = await UserDB.findOne({ where: { username } });
+    const user = await userSequelizeRepository.findOne({ where: { username } });
     return user ? (user.toJSON() as UserDB) : null;
   }
 
   static async findUserByPK(uuid: string): Promise<UserDB | null> {
-    const user = await UserDB.findByPk(uuid);
+    const user = await userSequelizeRepository.findByPk(uuid);
     return user ? user : null;
   }
 
@@ -85,7 +88,7 @@ export class UserService {
     const hashPassword = await bcrypt.hash(password, 10);
 
     // Cria usuário
-    const newUser = await UserDB.create({
+    const newUser = await userSequelizeRepository.create({
       ...data,
       username: username,
       password: hashPassword,
@@ -109,7 +112,7 @@ export class UserService {
     id: string,
     data: UserRequired
   ): Promise<UserGenericResponse> {
-    const user = await UserDB.findByPk(id);
+    const user = await userSequelizeRepository.findByPk(id);
 
     if (!user) {
       return {
@@ -178,7 +181,7 @@ export class UserService {
         }
       : {};
 
-    const result = await UserDB.findAndCountAll({
+    const result = await userSequelizeRepository.findAndCountAll({
       where,
       attributes: { exclude: ["password", "cpf"] },
       offset,
@@ -195,7 +198,7 @@ export class UserService {
   }
 
   static async deleteUser(uuid: string): Promise<GenericResponse> {
-    const user = await UserDB.findByPk(uuid);
+    const user = await userSequelizeRepository.findByPk(uuid);
 
     if (!user) {
       return {
@@ -219,7 +222,7 @@ export class UserService {
     oldPassword: string,
     newPassword: string
   ): Promise<GenericResponse> {
-    let user = await UserDB.findByPk(uuid);
+    let user = await userSequelizeRepository.findByPk(uuid);
 
     if (!user) {
       return {

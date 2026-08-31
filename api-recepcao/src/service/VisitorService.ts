@@ -1,13 +1,14 @@
 import { Op } from "sequelize";
-import { Visitors } from "../db/model/visitors.js";
 import {
   VisitorsQueryParams,
   GetVisitorssResponse,
   VisitorsGenericResponse,
-  VisitorsParams,
   VisitorsRequired,
-} from "../types/visitorTypes.js";
-import validatorCPF from "../utils/validatorCPF.js";
+} from "../core/types/visitorTypes.js";
+import validatorCPF from "../core/utils/validatorCPF.js";
+import db from "../infra/database/sequelize/index.js";
+
+const visitorsSequelizeRepository = db.VisitorsModel;
 
 const isDuplicateUser = async (cpf?: string | null, excludeUuid?: string) => {
   const where: any = {
@@ -17,7 +18,7 @@ const isDuplicateUser = async (cpf?: string | null, excludeUuid?: string) => {
   if (excludeUuid) {
     where.uuid = { [Op.ne]: excludeUuid };
   }
-  return await Visitors.findOne({ where });
+  return await visitorsSequelizeRepository.findOne({ where });
 };
 
 export class VisitorsService {
@@ -41,7 +42,7 @@ export class VisitorsService {
         }
       : {};
 
-    const { count, rows } = await Visitors.findAndCountAll({
+    const { count, rows } = await visitorsSequelizeRepository.findAndCountAll({
       where,
       attributes: {
         exclude: [
@@ -77,7 +78,7 @@ export class VisitorsService {
   }
 
   static async getVisitorById(uuid: string): Promise<VisitorsGenericResponse> {
-    const visitor = await Visitors.findOne({ where: { uuid } });
+    const visitor = await visitorsSequelizeRepository.findOne({ where: { uuid } });
     if (!visitor) {
       return {
         ok: false,
@@ -113,7 +114,7 @@ export class VisitorsService {
       };
     }
 
-    const newVisitor = await Visitors.create(visitorData);
+    const newVisitor = await visitorsSequelizeRepository.create(visitorData);
     return {
       ok: true,
       message: "Visitante criado com sucesso",
@@ -125,7 +126,7 @@ export class VisitorsService {
     uuid: string,
     visitorData: VisitorsRequired
   ): Promise<VisitorsGenericResponse> {
-    const updatedVisitor = await Visitors.findByPk(uuid);
+    const updatedVisitor = await visitorsSequelizeRepository.findByPk(uuid);
 
     if (!updatedVisitor) {
       return {
@@ -146,7 +147,7 @@ export class VisitorsService {
   }
 
   static async deleteVisitor(uuid: string): Promise<VisitorsGenericResponse> {
-    const deleted = await Visitors.destroy({ where: { uuid } });
+    const deleted = await visitorsSequelizeRepository.destroy({ where: { uuid } });
 
     if (deleted) {
       return {

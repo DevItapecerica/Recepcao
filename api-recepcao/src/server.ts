@@ -6,10 +6,8 @@ import { fastifySwagger } from "@fastify/swagger";
 import { fastifySwaggerUi } from "@fastify/swagger-ui";
 import { Router } from "./router/routes.js";
 
-import { PORT } from "./config/env.js";
-import { interfaceErrorResponse } from "./types/errorTypes.js";
-
-import "./db/model/association.js";
+import { PORT } from "./core/config/env.js";
+import { interfaceErrorResponse } from "./core/types/errorTypes.js";
 
 const app = fastify({
   logger: {

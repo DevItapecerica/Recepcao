@@ -3,7 +3,7 @@ import {
   VisitsParams,
   VisitsQueryParams,
   VisitsRequired,
-} from "../../types/visitsTypes.js";
+} from "../../core/types/visitsTypes.js";
 import { VisitsService } from "../../service/VisitsService.js";
 
 export const getVisits = async (

@@ -1,6 +1,6 @@
 import { FastifyRequest } from "fastify";
 import { decodeToken } from "../utils/DecodeToken.js";
-import { UserService } from "../service/UserService.js";
+import { UserService } from "../../service/UserService.js";
 
 declare module "fastify" {
   interface FastifyRequest {

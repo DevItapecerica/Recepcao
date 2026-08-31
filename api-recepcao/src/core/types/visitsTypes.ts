@@ -1,6 +1,6 @@
-import { Visitors } from "../db/model/visitors.js";
-import { UserDB } from "../db/model/user.js";
-import { Visits as VisitsDB } from "../db/model/visits.js";
+import { UserDB } from "../../infra/database/sequelize/models/user.model.js";
+import { Visitors } from "../../infra/database/sequelize/models/visitors.model.js";
+import { Visits as VisitsDB } from "../../infra/database/sequelize/models/visits.model.js";
 
 export interface VisitsParams {
   uuid: string;

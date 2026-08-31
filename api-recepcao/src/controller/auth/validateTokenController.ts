@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { decodeToken } from "../../utils/DecodeToken.js";
+import { decodeToken } from "../../core/utils/DecodeToken.js";
 import { request } from "http";
 
 interface ValidateRequestBody {

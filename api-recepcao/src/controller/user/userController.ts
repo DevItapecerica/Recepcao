@@ -1,10 +1,10 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { UserDB } from "../../db/model/user.js";
+import { UserDB } from "../../infra/db/sequelize/models/user.js";
 import {
   UserParams,
   UserQueryParams,
   UserRequired,
-} from "../../types/userTypes.js";
+} from "../../core/types/userTypes.js";
 
 import { UserService } from "../../service/UserService.js";
 

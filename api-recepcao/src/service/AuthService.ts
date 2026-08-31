@@ -1,9 +1,9 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { UserService } from "./UserService.js";
-import { AuthResult } from "../types/authTypes.js";
+import { AuthResult } from "../core/types/authTypes.js";
 
-import { SECRET_KEY_JWT } from "../config/env.js";
+import { SECRET_KEY_JWT } from "../core/config/env.js";
 
 export class Auth {
   static async Login(username: string, password: string): Promise<AuthResult> {

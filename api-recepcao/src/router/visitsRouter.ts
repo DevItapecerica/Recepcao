@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify";
 
-import { authJWT } from "../middleware/authJWT.js";
-import { checkPermissions } from "../middleware/checkPermissions.js";
+import { authJWT } from "../core/middleware/authJWT.js";
+import { checkPermissions } from "../core/middleware/checkPermissions.js";
 import {
   getVisits,
   getVisitsByVisitorId,

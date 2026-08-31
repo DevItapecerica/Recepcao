@@ -6,9 +6,9 @@ import {
   updateUserController,
 } from "../controller/user/userController.js";
 
-import { authJWT } from "../middleware/authJWT.js";
-import { checkPermissions } from "../middleware/checkPermissions.js";
-import { APPLICATION_ENVORIMENT } from "../config/env.js";
+import { authJWT } from "../core/middleware/authJWT.js";
+import { checkPermissions } from "../core/middleware/checkPermissions.js";
+import { APPLICATION_ENVORIMENT } from "../core/config/env.js";
 
 const userSchema = {
   type: "object",

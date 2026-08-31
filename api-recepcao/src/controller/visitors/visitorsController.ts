@@ -3,7 +3,7 @@ import { VisitorsService } from "../../service/VisitorService.js";
 import {
   VisitorsQueryParams,
   VisitorsRequired,
-} from "../../types/visitorTypes.js";
+} from "../../core/types/visitorTypes.js";
 
 export const getVisitorsController = async (
   request: FastifyRequest<{ Querystring: VisitorsQueryParams }>,
