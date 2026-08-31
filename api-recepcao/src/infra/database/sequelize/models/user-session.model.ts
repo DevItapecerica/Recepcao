@@ -13,7 +13,7 @@ export interface UserSessionDB
     InferCreationAttributes<UserSessionDB>
   > {
   id: CreationOptional<number>;
-  userId: number;
+  userId: string;
   refreshTokenHash: string;
   expiresAt: Date;
   revokedAt: Date | null;
@@ -27,7 +27,7 @@ export default (sequelize: Sequelize, dataTypes: typeof DataTypes) => {
     "UserSessionModel",
     {
       id: {
-        type: dataTypes.INTEGER,
+        type: dataTypes.UUID,
         autoIncrement: true,
         allowNull: false,
         primaryKey: true,
@@ -37,8 +37,8 @@ export default (sequelize: Sequelize, dataTypes: typeof DataTypes) => {
         allowNull: false,
         field: "user_id",
         references: {
-          model: "UserModel",
-          key: "id",
+          model: "users",
+          key: "uuid",
         },
         onUpdate: "CASCADE",
         onDelete: "CASCADE",
