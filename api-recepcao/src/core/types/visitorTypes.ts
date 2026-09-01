@@ -23,16 +23,15 @@ export type getVisitors = {
   count: number;
 }
 
+export type VisitorUpdate = Omit<VisitorsRequired, "cpf">;
+
 export type GetVisitorssResponse = {
-  ok: true;
   message: string;
   visitor: Visitor[];
   count: number;
 };
 
-export type VisitorsGenericResponse =
-  | { ok: true; message: string; visitor?: Visitor }
-  | { ok: false; code: number; message: string; error?: unknown };
+export type VisitorsGenericResponse = { message: string; visitor?: Visitor };
 
 export type VisitorsQueryParams = {
   search?: string;

@@ -20,35 +20,20 @@ export interface VisitsWithAssociation extends Visit {
 
 // bulk
 interface getVisitsSucess {
-  ok: true;
   message: string;
   visits: VisitsWithAssociation[];
   count: number;
 }
 
-interface getVisitsFail {
-  ok: false;
-  code: number;
-  message: string;
-}
-
-export type GetVisitsResponse = getVisitsSucess | getVisitsFail;
+export type GetVisitsResponse = getVisitsSucess;
 
 // just one
 interface VisitsSuccessfull {
-  ok: true;
   message: string;
   visits: Visit;
 }
 
-interface VisitsFail {
-  ok: false;
-  error?: any;
-  code: number;
-  message: string;
-}
-
-export type VisitsGenericResponse = VisitsSuccessfull | VisitsFail;
+export type VisitsGenericResponse = VisitsSuccessfull;
 
 export type VisitsQueryParams = {
   search?: string;

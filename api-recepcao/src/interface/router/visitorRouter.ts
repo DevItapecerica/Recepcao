@@ -1,10 +1,5 @@
 import { FastifyInstance } from "fastify";
-import {
-  createVisitorController,
-  getVisitorsController,
-  deleteVisitorController,
-  updateVisitorController,
-} from "../controller/visitors/visitorsController.js";
+import { VisitorController } from "../controller/visitors/visitorsController.js";
 
 import { authJWT } from "../../core/middleware/authJWT.js";
 import { checkPermissions } from "../../core/middleware/checkPermissions.js";
@@ -16,6 +11,22 @@ const visitorParams = {
   properties: {
     name: { type: "string" },
     cpf: { type: "string" },
+    photo: { type: "string", nullable: true },
+    email: { type: "string", nullable: true },
+    phone: { type: "string", nullable: true },
+    address: { type: "string", nullable: true },
+    city: { type: "string", nullable: true },
+    state: { type: "string", nullable: true },
+    zipCode: { type: "string", nullable: true },
+  },
+  additionalProperties: false,
+};
+
+const visitorUpdateParams = {
+  type: "object",
+  required: ["name"],
+  properties: {
+    name: { type: "string" },
     photo: { type: "string", nullable: true },
     email: { type: "string", nullable: true },
     phone: { type: "string", nullable: true },
@@ -62,6 +73,7 @@ const visitorResponse = {
 export async function visitorRouter(app: FastifyInstance) {
   app.addHook("preHandler", authJWT);
   app.addHook("preHandler", checkPermissions);
+  const visitorController = new VisitorController();
 
   app.route({
     method: "GET",
@@ -97,7 +109,7 @@ export async function visitorRouter(app: FastifyInstance) {
         },
       },
     },
-    handler: getVisitorsController,
+    handler: visitorController.getVisitorsController,
   });
 
   app.route({
@@ -127,7 +139,7 @@ export async function visitorRouter(app: FastifyInstance) {
         ...errorSchema,
       },
     },
-    handler: createVisitorController,
+    handler: visitorController.createVisitorController,
   });
 
   app.route({
@@ -154,7 +166,7 @@ export async function visitorRouter(app: FastifyInstance) {
         ...errorSchema,
       },
     },
-    handler: deleteVisitorController,
+    handler: visitorController.deleteVisitorController,
   });
 
   app.route({
@@ -171,17 +183,18 @@ export async function visitorRouter(app: FastifyInstance) {
       tags: ["Visitor"],
       description: "Update a Visitor",
       summary: "Update Visitor",
-      body: visitorParams,
+      body: visitorUpdateParams,
       response: {
         200: {
           type: "object",
           properties: {
             message: { type: "string" },
+            visitor: visitorResponse,
           },
         },
         ...errorSchema,
       },
     },
-    handler: updateVisitorController,
+    handler: visitorController.updateVisitorController,
   });
 }

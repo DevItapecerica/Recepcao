@@ -1,6 +1,5 @@
 // types/auth.ts
 export interface AuthSuccess {
-  ok: true;
   user: {
     uuid: string;
     name: string;

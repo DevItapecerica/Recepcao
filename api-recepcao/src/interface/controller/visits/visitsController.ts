@@ -4,86 +4,45 @@ import {
   VisitsQueryParams,
   VisitsRequired,
 } from "../../../core/types/visitsTypes.js";
-import { VisitsService } from "../../../application/service/VisitsService.js";
+import { AppError } from "../../../core/types/errorTypes.js";
+import { VisitFactory } from "../../factories/visit/visit.factory.js";
 
-export const getVisits = async (
-  request: FastifyRequest<{ Querystring: VisitsQueryParams }>,
-  reply: FastifyReply
-) => {
-  const query = request.query;
+export class VisitController {
+  private readonly visitsService = new VisitFactory().visitService();
 
-    const response = await VisitsService.listVisits(query);
-
-    if (!response.ok) throw response;
-
-    reply.status(200).send({
-      message: response.message,
-      visits: response.visits,
-      count: response.count,
-    });
-
-};
-
-export const getVisitsByVisitorId = async (
-  request: FastifyRequest<{ Params: VisitsParams }>,
-  reply: FastifyReply
-) => {
-  const { uuid } = request.params;
-
-  try {
-    const response = await VisitsService.listVisitsByVisitorId(uuid);
-
-    if (!response.ok) {
-      throw {
-        ok: response.ok,
-        code: response.code || 500,
-        message: response.message || "Erro ao listar visitantes",
-      };
-    }
-
-    reply.status(200).send({
-      message: response.message,
-      visits: response.visits,
-    });
-  } catch (error: any) {
-    throw {
-      code: error.code || 500,
-      message: error.message || "erro interno no servidor",
-      ok: false,
-    };
-  }
-};
-
-export const postVisits = async (
-  request: FastifyRequest<{ Body: VisitsRequired }>,
-  reply: FastifyReply
-) => {
-  const { visitor_uuid, subject, date } = request.body;
-
-  const formated_date = date.replace("T", " ");
-
-  if (!request.user || !request.user.uuid) {
-    throw {
-      code: 401,
-      message: "Usuário não autenticado",
-      ok: false,
-    };
-  }
-
-  const payload = {
-    creator_uuid: request.user.uuid,
-    visitor_uuid,
-    subject,
-    date: formated_date,
+  getVisits = async (
+    request: FastifyRequest<{ Querystring: VisitsQueryParams }>,
+    reply: FastifyReply,
+  ): Promise<void> => {
+    const response = await this.visitsService.listVisits(request.query);
+    reply.status(200).send(response);
   };
 
-  const newVisit = await VisitsService.createVisits(payload);
+  getVisitsByVisitorId = async (
+    request: FastifyRequest<{ Params: VisitsParams }>,
+    reply: FastifyReply,
+  ): Promise<void> => {
+    const response = await this.visitsService.listVisitsByVisitorId(
+      request.params.uuid,
+    );
+    reply.status(200).send(response);
+  };
 
-  if (!newVisit.ok) {
-    throw { ...newVisit };
-  }
+  postVisits = async (
+    request: FastifyRequest<{ Body: VisitsRequired }>,
+    reply: FastifyReply,
+  ): Promise<void> => {
+    if (!request.user?.uuid) {
+      throw new AppError("Usuário não autenticado", 401, "UNAUTHORIZED");
+    }
 
-  reply
-    .status(201)
-    .send({ message: newVisit.message, visits: newVisit.visits });
-};
+    const result = await this.visitsService.createVisits({
+      creator_uuid: request.user.uuid,
+      visitor_uuid: request.body.visitor_uuid,
+      subject: request.body.subject,
+      date: request.body.date.replace("T", " "),
+    });
+
+    reply.status(201).send({ message: result.message, visits: result.visits });
+  };
+}

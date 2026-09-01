@@ -2,11 +2,7 @@ import { FastifyInstance } from "fastify";
 
 import { authJWT } from "../../core/middleware/authJWT.js";
 import { checkPermissions } from "../../core/middleware/checkPermissions.js";
-import {
-  getVisits,
-  getVisitsByVisitorId,
-  postVisits,
-} from "../controller/visits/visitsController.js";
+import { VisitController } from "../controller/visits/visitsController.js";
 import { errorSchema } from "../../core/shared/schema/errorSchema.js";
 
 const visitsParams = {
@@ -107,6 +103,7 @@ const visitById = {
 export async function visitsRouter(app: FastifyInstance) {
   app.addHook("preHandler", authJWT);
   app.addHook("preHandler", checkPermissions);
+  const visitController = new VisitController();
 
   app.route({
     method: "GET",
@@ -134,7 +131,7 @@ export async function visitsRouter(app: FastifyInstance) {
         ...errorSchema,
       },
     },
-    handler: getVisits,
+    handler: visitController.getVisits,
   });
 
   app.route({
@@ -162,7 +159,7 @@ export async function visitsRouter(app: FastifyInstance) {
         ...errorSchema,
       },
     },
-    handler: getVisitsByVisitorId,
+    handler: visitController.getVisitsByVisitorId,
   });
 
   app.route({
@@ -195,6 +192,6 @@ export async function visitsRouter(app: FastifyInstance) {
         ...errorSchema,
       },
     },
-    handler: postVisits,
+    handler: visitController.postVisits,
   });
 }

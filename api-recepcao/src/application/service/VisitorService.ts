@@ -3,17 +3,20 @@ import {
   GetVisitorssResponse,
   VisitorsGenericResponse,
   VisitorsRequired,
+  VisitorUpdate,
 } from "../../core/types/visitorTypes.js";
-import { visitorRepository } from "../../infra/database/sequelize/repositories/sequelize.visitor.repository.js";
 import { Visitor } from "../../domain/entities/Visitor.js";
-
-const isDuplicateUser = async (cpf?: string | null, excludeUuid?: string) => {
-  if (!cpf) return null;
-  return visitorRepository.findByCpf(cpf, excludeUuid);
-};
+import { IVisitorRepository } from "../../domain/repositories/visitor/visitor.repository.js";
+import { VisitorPolicyDomainService } from "../../domain/services/visitor/visitorPolicy.domain.service.js";
+import { AppError } from "../../core/types/errorTypes.js";
 
 export class VisitorsService {
-  static async listVisitors(
+  constructor(
+    private readonly visitorRepository: IVisitorRepository,
+    private readonly visitorPolicy: VisitorPolicyDomainService,
+  ) {}
+
+  async listVisitors(
     query: VisitorsQueryParams
   ): Promise<GetVisitorssResponse> {
     const {
@@ -27,7 +30,7 @@ export class VisitorsService {
     };
     const offset = Number(page) * Number(limit);
 
-    const { count, rows } = await visitorRepository.list({
+    const { count, rows } = await this.visitorRepository.list({
       search,
       offset,
       limit: Number(limit),
@@ -35,7 +38,6 @@ export class VisitorsService {
 
     if (rows.length === 0) {
       return {
-        ok: true,
         message: "Nenhum visitante encontrado",
         visitor: [],
         count: 0,
@@ -43,95 +45,78 @@ export class VisitorsService {
     }
 
     return {
-      ok: true,
       message: "Visitantes listados com sucesso",
       visitor: rows,
       count,
     };
   }
 
-  static async getVisitorById(uuid: string): Promise<VisitorsGenericResponse> {
-    const visitor = await visitorRepository.findById(uuid);
+  async getVisitorById(uuid: string): Promise<VisitorsGenericResponse> {
+    const visitor = await this.visitorRepository.findById(uuid);
     if (!visitor) {
-      return {
-        ok: false,
-        code: 404,
-        message: "Visitante não encontrado",
-      };
+      throw new AppError("Visitante não encontrado", 404, "NOT_FOUND");
     }
     return {
-      ok: true,
       message: "Visitante encontrado",
       visitor,
     };
   }
 
-  static async createVisitor(
+  async createVisitor(
     visitorData: VisitorsRequired
   ): Promise<VisitorsGenericResponse> {
     const visitor = Visitor.create(visitorData);
     if (!visitor.isValidCpf()) {
-      throw {
-        ok: false,
-        code: 403,
-        message: "CPF inválido",
-      };
+      throw new AppError("CPF inválido", 400, "INVALID_CPF");
     }
 
     // Verifica duplicidade
-    if (await isDuplicateUser(visitorData.cpf)) {
-      throw {
-        ok: false,
-        code: 403,
-        message: "Visitante Já existe",
-      };
+    if (await this.visitorPolicy.isDuplicateCpf(visitorData.cpf)) {
+      throw new AppError("Visitante já existe", 409, "DUPLICATE_VISITOR");
     }
 
-    const newVisitor = await visitorRepository.create(visitor);
+    const newVisitor = await this.visitorRepository.create(visitor);
     return {
-      ok: true,
       message: "Visitante criado com sucesso",
       visitor: newVisitor,
     };
   }
 
-  static async updateVisitor(
+  async updateVisitor(
     uuid: string,
-    visitorData: VisitorsRequired
+    visitorData: VisitorUpdate
   ): Promise<VisitorsGenericResponse> {
-    const updatedVisitor = await visitorRepository.findById(uuid);
+    const updatedVisitor = await this.visitorRepository.findById(uuid);
 
     if (!updatedVisitor) {
-      return {
-        ok: false,
-        code: 404,
-        message: "Visitante não encontrado",
-      };
+      throw new AppError("Visitante não encontrado", 404, "NOT_FOUND");
     }
 
     // Atualiza os campos do visitante
-    Object.assign(updatedVisitor, visitorData);
-    await visitorRepository.save(updatedVisitor);
+    updatedVisitor.name = visitorData.name;
+    updatedVisitor.photo = visitorData.photo ?? null;
+    updatedVisitor.email = visitorData.email ?? null;
+    updatedVisitor.phone = visitorData.phone ?? null;
+    updatedVisitor.address = visitorData.address ?? null;
+    updatedVisitor.city = visitorData.city ?? null;
+    updatedVisitor.state = visitorData.state ?? null;
+    updatedVisitor.zipCode = visitorData.zipCode ?? null;
+    await this.visitorRepository.save(updatedVisitor);
     return {
-      ok: true,
       message: "Visitante atualizado com sucesso",
       visitor: updatedVisitor,
     };
   }
 
-  static async deleteVisitor(uuid: string): Promise<VisitorsGenericResponse> {
-    const deleted = await visitorRepository.deleteById(uuid);
+  async deleteVisitor(uuid: string): Promise<VisitorsGenericResponse> {
+    const deleted = await this.visitorRepository.deleteById(uuid);
 
-    if (deleted) {
-      return {
-        ok: true,
-        message: "Visitante deletado com sucesso",
-      };
+    if (!deleted) {
+      throw new AppError("Visitante não encontrado", 404, "NOT_FOUND");
     }
+
     return {
-      ok: false,
-      code: 404,
-      message: "Visitante não encontrado",
+      message: "Visitante deletado com sucesso",
     };
   }
 }

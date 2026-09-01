@@ -34,7 +34,6 @@ export class Auth {
     const tokenResult = `Bearer ${token}`;
 
     return {
-      ok: true,
       user: {
         uuid: user.uuid,
         name: user.username,

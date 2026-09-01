@@ -6,17 +6,21 @@ import {
   VisitsResponse,
 } from "../../core/types/visitsTypes.js";
 import { Visit } from "../../domain/entities/Visit.js";
-import { visitRepository } from "../../infra/database/sequelize/repositories/sequelize.visit.repository.js";
-import { userRepository } from "../../infra/database/sequelize/repositories/sequelize.user.repository.js";
-import { visitorRepository } from "../../infra/database/sequelize/repositories/sequelize.visitor.repository.js";
+import { IVisitRepository } from "../../domain/repositories/visit/visit.repository.js";
+import { IUserRepository } from "../../domain/repositories/user/user.repository.js";
+import { IVisitorRepository } from "../../domain/repositories/visitor/visitor.repository.js";
+import { AppError } from "../../core/types/errorTypes.js";
 
 export class VisitsService {
-  static async listVisits(
+  constructor(
+    private readonly visitRepository: IVisitRepository,
+    private readonly userRepository: IUserRepository,
+    private readonly visitorRepository: IVisitorRepository,
+  ) {}
+
+  async listVisits(
     query: VisitsQueryParams
-  ): Promise<
-    | { ok: true; message: string; visits: VisitsResponse[]; count: number }
-    | { ok: false; code: number; message: string }
-  > {
+  ): Promise<{ message: string; visits: VisitsResponse[]; count: number }> {
     const {
       page = "0",
       limit = "10",
@@ -28,7 +32,7 @@ export class VisitsService {
     };
     const offset = Number(page) * Number(limit);
 
-    const { count, rows } = await visitRepository.list({
+    const { count, rows } = await this.visitRepository.list({
       search,
       offset,
       limit: Number(limit),
@@ -60,64 +64,50 @@ export class VisitsService {
     });
 
     if (!rows.length) {
-      return {
-        ok: false,
-        code: 404,
-        message: "No visits found",
-      };
+      throw new AppError("No visits found", 404, "NOT_FOUND");
     }
 
     return {
-      ok: true,
       message: "Visits successfully listed",
       visits,
       count,
     };
   }
 
-  static async createVisits(
+  async createVisits(
     visitsData: VisitsRequired
   ): Promise<VisitsGenericResponse> {
-    const visitor = await visitorRepository.findById(visitsData.visitor_uuid);
-    const creator = await userRepository.findUserById(visitsData.creator_uuid);
+    const visitor = await this.visitorRepository.findById(visitsData.visitor_uuid);
+    const creator = await this.userRepository.findUserById(visitsData.creator_uuid);
 
     if (!visitor || !creator) {
-      return {
-        ok: false,
-        code: 400,
-        message: "Visitor or creator not found...",
-      };
+      throw new AppError(
+        "Visitor or creator not found",
+        400,
+        "INVALID_VISIT_REFERENCE",
+      );
     }
 
-    const newVisits = await visitRepository.create(Visit.create(visitsData));
+    const newVisits = await this.visitRepository.create(Visit.create(visitsData));
 
     return {
-      ok: true,
       message: "visit created success",
       visits: newVisits,
     };
   }
 
-  static async listVisitsByVisitorId(uuid: string): Promise<
-    | {
-        ok: true;
-        visits: VisitsResponse[];
-        message: string;
-      }
-    | {
-        ok: false;
-        code: number;
-        message: string;
-      }
-  > {
-    const visits = await visitRepository.listByVisitorId(uuid);
+  async listVisitsByVisitorId(uuid: string): Promise<{
+    visits: VisitsResponse[];
+    message: string;
+  }> {
+    const visits = await this.visitRepository.listByVisitorId(uuid);
 
     if (!visits.length) {
-      return {
-        ok: false,
-        code: 404,
-        message: "No visits found for the given visitor ID",
-      };
+      throw new AppError(
+        "No visits found for the given visitor ID",
+        404,
+        "NOT_FOUND",
+      );
     }
 
     const visitsResponse: VisitsResponse[] = visits.map((visit) => {
@@ -145,7 +135,6 @@ export class VisitsService {
     });
 
     return {
-      ok: true,
       visits: visitsResponse,
       message: "Visits found",
     };
