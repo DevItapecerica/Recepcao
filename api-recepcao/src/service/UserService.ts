@@ -1,5 +1,4 @@
 import bcrypt from "bcryptjs";
-import { Op } from "sequelize";
 import {
   UserGenericResponse,
   UserQueryParams,
@@ -11,10 +10,9 @@ import validatorCPF from "../core/utils/validatorCPF.js";
 import { generateStrongPassword } from "../core/utils/passwordGenerator.js";
 import { sendMail } from "../core/utils/sendMail.js";
 import { APPLICATION_ENVORIMENT } from "../core/config/env.js";
-import db from "../infra/database/sequelize/index.js";
 import { UserDB } from "../infra/database/sequelize/models/user.model.js";
-
-const userSequelizeRepository = db.UserModel;
+import { AppError } from "../core/types/errorTypes.js";
+import { userRepository } from "../infra/database/sequelize/repositories/sequelize.user.repository.js";
 
 // Função utilitária para validar role
 const isValidRole = (role: string) =>
@@ -26,46 +24,27 @@ const isDuplicateUser = async (
   cpf?: string | null,
   excludeUuid?: string
 ) => {
-  const where: any = {
-    [Op.or]: [{ email }, { cpf }],
-  };
-  if (excludeUuid) {
-    where.uuid = { [Op.ne]: excludeUuid };
-  }
-  return await userSequelizeRepository.findOne({ where });
+  return userRepository.findDuplicate(email, cpf, excludeUuid);
 };
 
 export class UserService {
   static async findUserByUsername(username: string): Promise<UserDB | null> {
-    const user = await userSequelizeRepository.findOne({ where: { username } });
+    const user = await userRepository.findByUsername(username);
     return user ? (user.toJSON() as UserDB) : null;
   }
 
   static async findUserByPK(uuid: string): Promise<UserDB | null> {
-    const user = await userSequelizeRepository.findByPk(uuid);
-    return user ? user : null;
+    return userRepository.findById(uuid);
   }
 
   static async CreateUser(data: UserRequired): Promise<UserGenericResponse> {
     // Validações
     if (!isValidRole(data.role)) {
-      return {
-        ok: false,
-        code: 400,
-        message:
-          "the field 'role' must be 'admin', 'user', 'recepcionist' or 'superadmin'",
-      };
+      throw new AppError("the field 'role' must be 'admin', 'user', 'recepcionist' or 'superadmin'", 400);
     }
 
-    const cpfValidation = validatorCPF(data.cpf);
-    if (!cpfValidation.ok) {
-      return {
-        ok: false,
-        code: 403,
-        message: "CPF inválido",
-      };
-    }
-
+    validatorCPF(data.cpf);
+    
     // Verifica duplicidade
     if (await isDuplicateUser(data.email, data.cpf)) {
       return {
@@ -88,7 +67,7 @@ export class UserService {
     const hashPassword = await bcrypt.hash(password, 10);
 
     // Cria usuário
-    const newUser = await userSequelizeRepository.create({
+    const newUser = await userRepository.create({
       ...data,
       username: username,
       password: hashPassword,
@@ -112,7 +91,7 @@ export class UserService {
     id: string,
     data: UserRequired
   ): Promise<UserGenericResponse> {
-    const user = await userSequelizeRepository.findByPk(id);
+    const user = await userRepository.findById(id);
 
     if (!user) {
       return {
@@ -146,7 +125,7 @@ export class UserService {
     user.email = data.email;
     user.role = data.role;
 
-    await user.save();
+    await userRepository.save(user);
 
     return {
       ok: true,
@@ -171,22 +150,10 @@ export class UserService {
 
     const offset = Number(page) * Number(limit);
 
-    const where = search
-      ? {
-          [Op.or]: [
-            { first_name: { [Op.like]: `%${search}%` } },
-            { last_name: { [Op.like]: `%${search}%` } },
-            { email: { [Op.like]: `%${search}%` } },
-          ],
-        }
-      : {};
-
-    const result = await userSequelizeRepository.findAndCountAll({
-      where,
-      attributes: { exclude: ["password", "cpf"] },
+    const result = await userRepository.list({
+      search,
       offset,
       limit: Number(limit),
-      order: [["createdAt", "DESC"]],
     });
 
     return {
@@ -198,7 +165,7 @@ export class UserService {
   }
 
   static async deleteUser(uuid: string): Promise<GenericResponse> {
-    const user = await userSequelizeRepository.findByPk(uuid);
+    const user = await userRepository.findById(uuid);
 
     if (!user) {
       return {
@@ -208,7 +175,7 @@ export class UserService {
       };
     }
 
-    await user.destroy();
+    await userRepository.delete(user);
 
     return {
       ok: true,
@@ -222,7 +189,7 @@ export class UserService {
     oldPassword: string,
     newPassword: string
   ): Promise<GenericResponse> {
-    let user = await userSequelizeRepository.findByPk(uuid);
+    const user = await userRepository.findById(uuid);
 
     if (!user) {
       return {
@@ -246,7 +213,7 @@ export class UserService {
     const hashPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashPassword;
 
-    user.save();
+    await userRepository.save(user);
 
     return {
       ok: true,

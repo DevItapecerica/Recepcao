@@ -1,9 +1,9 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { VisitorsService } from "../../service/VisitorService.js";
+import { VisitorsService } from "../../../service/VisitorService.js";
 import {
   VisitorsQueryParams,
   VisitorsRequired,
-} from "../../core/types/visitorTypes.js";
+} from "../../../core/types/visitorTypes.js";
 
 export const getVisitorsController = async (
   request: FastifyRequest<{ Querystring: VisitorsQueryParams }>,

@@ -4,7 +4,7 @@ import {
   getVisitorsController,
   deleteVisitorController,
   updateVisitorController,
-} from "../controller/visitors/visitorsController.js";
+} from "../interface/controller/visitors/visitorsController.js";
 
 import { authJWT } from "../core/middleware/authJWT.js";
 import { checkPermissions } from "../core/middleware/checkPermissions.js";

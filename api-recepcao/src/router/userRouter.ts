@@ -4,7 +4,7 @@ import {
   deleteUserController,
   getUsersController,
   updateUserController,
-} from "../controller/user/userController.js";
+} from "../interface/controller/user/userController.js";
 
 import { authJWT } from "../core/middleware/authJWT.js";
 import { checkPermissions } from "../core/middleware/checkPermissions.js";

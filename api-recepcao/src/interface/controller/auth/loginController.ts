@@ -1,7 +1,6 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 
-import { Auth } from "../../service/AuthService.js";
-import { AuthResult } from "../../core/types/authTypes.js";
+import { Auth } from "../../../service/AuthService.js";
 
 interface LoginRequestBody {
   username: string;
@@ -11,7 +10,7 @@ interface LoginRequestBody {
 export const loginController = async (
   req: FastifyRequest<{ Body: LoginRequestBody }>,
   reply: FastifyReply
-): Promise<void> => {
+) => {
   const { username, password } = req.body;
   const result = await Auth.Login(username, password);
 

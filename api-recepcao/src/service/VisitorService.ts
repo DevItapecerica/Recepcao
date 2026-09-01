@@ -1,4 +1,3 @@
-import { Op } from "sequelize";
 import {
   VisitorsQueryParams,
   GetVisitorssResponse,
@@ -6,19 +5,11 @@ import {
   VisitorsRequired,
 } from "../core/types/visitorTypes.js";
 import validatorCPF from "../core/utils/validatorCPF.js";
-import db from "../infra/database/sequelize/index.js";
-
-const visitorsSequelizeRepository = db.VisitorsModel;
+import { visitorRepository } from "../infra/database/sequelize/repositories/sequelize.visitor.repository.js";
 
 const isDuplicateUser = async (cpf?: string | null, excludeUuid?: string) => {
-  const where: any = {
-    [Op.or]: [{ cpf }],
-  };
-  // to update user or visitor
-  if (excludeUuid) {
-    where.uuid = { [Op.ne]: excludeUuid };
-  }
-  return await visitorsSequelizeRepository.findOne({ where });
+  if (!cpf) return null;
+  return visitorRepository.findByCpf(cpf, excludeUuid);
 };
 
 export class VisitorsService {
@@ -36,28 +27,10 @@ export class VisitorsService {
     };
     const offset = Number(page) * Number(limit);
 
-    const where = search
-      ? {
-          [Op.or]: [{ name: { [Op.like]: `%${search}%` } }],
-        }
-      : {};
-
-    const { count, rows } = await visitorsSequelizeRepository.findAndCountAll({
-      where,
-      attributes: {
-        exclude: [
-          "cpf",
-          // "email",
-          // "phone",
-          // "address",
-          // "city",
-          // "state",
-          // "zipCode",
-        ],
-      },
+    const { count, rows } = await visitorRepository.list({
+      search,
       offset,
       limit: Number(limit),
-      order: [["createdAt", "DESC"]],
     });
 
     if (rows.length === 0) {
@@ -78,7 +51,7 @@ export class VisitorsService {
   }
 
   static async getVisitorById(uuid: string): Promise<VisitorsGenericResponse> {
-    const visitor = await visitorsSequelizeRepository.findOne({ where: { uuid } });
+    const visitor = await visitorRepository.findById(uuid);
     if (!visitor) {
       return {
         ok: false,
@@ -114,7 +87,7 @@ export class VisitorsService {
       };
     }
 
-    const newVisitor = await visitorsSequelizeRepository.create(visitorData);
+    const newVisitor = await visitorRepository.create(visitorData);
     return {
       ok: true,
       message: "Visitante criado com sucesso",
@@ -126,7 +99,7 @@ export class VisitorsService {
     uuid: string,
     visitorData: VisitorsRequired
   ): Promise<VisitorsGenericResponse> {
-    const updatedVisitor = await visitorsSequelizeRepository.findByPk(uuid);
+    const updatedVisitor = await visitorRepository.findById(uuid);
 
     if (!updatedVisitor) {
       return {
@@ -138,7 +111,7 @@ export class VisitorsService {
 
     // Atualiza os campos do visitante
     Object.assign(updatedVisitor, visitorData);
-    await updatedVisitor.save();
+    await visitorRepository.save(updatedVisitor);
     return {
       ok: true,
       message: "Visitante atualizado com sucesso",
@@ -147,7 +120,7 @@ export class VisitorsService {
   }
 
   static async deleteVisitor(uuid: string): Promise<VisitorsGenericResponse> {
-    const deleted = await visitorsSequelizeRepository.destroy({ where: { uuid } });
+    const deleted = await visitorRepository.deleteById(uuid);
 
     if (deleted) {
       return {

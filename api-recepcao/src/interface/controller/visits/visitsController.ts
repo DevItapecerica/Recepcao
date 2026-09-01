@@ -3,8 +3,8 @@ import {
   VisitsParams,
   VisitsQueryParams,
   VisitsRequired,
-} from "../../core/types/visitsTypes.js";
-import { VisitsService } from "../../service/VisitsService.js";
+} from "../../../core/types/visitsTypes.js";
+import { VisitsService } from "../../../service/VisitsService.js";
 
 export const getVisits = async (
   request: FastifyRequest<{ Querystring: VisitsQueryParams }>,

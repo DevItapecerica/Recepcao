@@ -1,4 +1,3 @@
-import { Op } from "sequelize";
 import {
   VisitsGenericResponse,
   VisitsQueryParams,
@@ -6,14 +5,10 @@ import {
   VisitsWithAssociation,
   VisitsResponse,
 } from "../core/types/visitsTypes.js";
-import { Visitors } from "../infra/database/sequelize/models/visitors.model.js";
-import { UserDB } from "../infra/database/sequelize/models/user.model.js";
-import db from "../infra/database/sequelize/index.js";
 import { Visits } from "../infra/database/sequelize/models/visits.model.js";
-
-const visitsSequelizeRepository = db.VisitsModel;
-const userSequelizeRepository = db.UserModel;
-const visitorsSequelizeRepository = db.VisitorsModel;
+import { visitRepository } from "../infra/database/sequelize/repositories/sequelize.visit.repository.js";
+import { userRepository } from "../infra/database/sequelize/repositories/sequelize.user.repository.js";
+import { visitorRepository } from "../infra/database/sequelize/repositories/sequelize.visitor.repository.js";
 
 export class VisitsService {
   static async listVisits(
@@ -33,21 +28,10 @@ export class VisitsService {
     };
     const offset = Number(page) * Number(limit);
 
-    const where = search
-      ? {
-          [Op.or]: [{ date: { [Op.like]: `%${search.split("T")[0]}%` } }],
-        }
-      : {};
-
-    const { count, rows: rows }: { count: number; rows: Visits[] } = await visitsSequelizeRepository.findAndCountAll({
-      where,
-      include: [
-        { model: userSequelizeRepository, as: "Creator" },
-        { model: visitorsSequelizeRepository, as: "Visitor" },
-      ],
+    const { count, rows }: { count: number; rows: Visits[] } = await visitRepository.list({
+      search,
       offset,
       limit: Number(limit),
-      order: [["createdAt", "DESC"]],
     });
 
     const visits: VisitsResponse[] = rows.map((visit) => {
@@ -94,8 +78,8 @@ export class VisitsService {
   static async createVisits(
     visitsData: VisitsRequired
   ): Promise<VisitsGenericResponse> {
-    const visitor = await visitorsSequelizeRepository.findByPk(visitsData.visitor_uuid);
-    const creator = await userSequelizeRepository.findByPk(visitsData.creator_uuid);
+    const visitor = await visitorRepository.findById(visitsData.visitor_uuid);
+    const creator = await userRepository.findById(visitsData.creator_uuid);
 
     if (!visitor || !creator) {
       return {
@@ -105,7 +89,7 @@ export class VisitsService {
       };
     }
 
-    const newVisits = await visitsSequelizeRepository.create(visitsData);
+    const newVisits = await visitRepository.create(visitsData);
 
     return {
       ok: true,
@@ -126,14 +110,7 @@ export class VisitsService {
         message: string;
       }
   > {
-    const visits: Visits[] = await visitsSequelizeRepository.findAll({
-      where: { visitor_uuid: uuid },
-      order: [["createdAt", "DESC"]],
-      include: [
-        { model: userSequelizeRepository, as: "Creator" },
-        { model: visitorsSequelizeRepository, as: "Visitor" },
-      ],
-    });
+    const visits = await visitRepository.listByVisitorId(uuid);
 
     if (!visits.length) {
       return {

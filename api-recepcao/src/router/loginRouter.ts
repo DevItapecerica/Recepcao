@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify";
-import { loginController } from "../controller/auth/loginController.js";
-import { ValidateTokenController } from "../controller/auth/validateTokenController.js";
-import { AlterPwdController } from "../controller/auth/alterpwdController.js";
+import { loginController } from "../interface/controller/auth/loginController.js";
+import { ValidateTokenController } from "../interface/controller/auth/validateTokenController.js";
+import { AlterPwdController } from "../interface/controller/auth/alterpwdController.js";
 import { authJWT } from "../core/middleware/authJWT.js";
 
 export async function loginRouter(app: FastifyInstance) {

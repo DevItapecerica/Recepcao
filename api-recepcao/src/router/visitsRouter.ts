@@ -6,7 +6,7 @@ import {
   getVisits,
   getVisitsByVisitorId,
   postVisits,
-} from "../controller/visits/visitsController.js";
+} from "../interface/controller/visits/visitsController.js";
 
 const visitsParams = {
   type: "object",

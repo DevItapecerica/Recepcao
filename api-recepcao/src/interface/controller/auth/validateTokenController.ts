@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { decodeToken } from "../../core/utils/DecodeToken.js";
-import { request } from "http";
+import { decodeToken } from "../../../core/utils/DecodeToken.js";
+import { AppError } from "../../../core/types/errorTypes.js";
 
 interface ValidateRequestBody {
   token: string | undefined;
@@ -8,17 +8,13 @@ interface ValidateRequestBody {
 
 export const ValidateTokenController = async (
   request: FastifyRequest<{ Body: ValidateRequestBody }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) => {
-  // const token: string | undefined = request.headers.authorization?.replace(
-  //   "Bearer ",
-  //   ""
-  // );
   const { token } = request.body;
   const formatedToken = token?.replace("Bearer ", "");
 
   if (!formatedToken) {
-    throw { ok: false, code: 401, message: "Token not provider" };
+    throw new AppError("Token not provider", 401, "UNAUTHORIZED");
   }
 
   const tokenResult = await decodeToken(formatedToken);
@@ -29,5 +25,14 @@ export const ValidateTokenController = async (
     throw error;
   }
 
-  reply.status(200).send({message: tokenResult.message, name: tokenResult.name, uuid: tokenResult.uuid, role: tokenResult.role, ok: true});
+  reply
+    .status(200)
+    .send({
+      message: tokenResult.message,
+      token: {
+        name: tokenResult.name,
+        uuid: tokenResult.uuid,
+        role: tokenResult.role,
+      },
+    });
 };
