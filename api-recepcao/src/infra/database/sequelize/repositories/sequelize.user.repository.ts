@@ -1,52 +1,79 @@
 import { Op } from "sequelize";
-import { IUserRepository, UserListOptions, UserListResult } from "../../../../core/repositories/user.repository.js";
-import { UserRequired } from "../../../../application/dto/user/userTypes.js";
+
 import db from "../index.js";
 import { UserDB } from "../models/user.model.js";
+import { User } from "../../../../domain/entities/User.js";
+import {
+  IUserRepository,
+  UserListOptions,
+  UserListResult,
+} from "../../../../domain/repositories/user/user.repository.js";
 
 export class SequelizeUserRepository implements IUserRepository {
   private get model() {
     return db.UserModel;
   }
 
-  async findById(uuid: string): Promise<UserDB | null> {
-    return this.model.findByPk(uuid);
+  private toDomain(model: UserDB): User {
+    return new User(model.get({ plain: true }));
   }
 
-  async findByUsername(username: string): Promise<UserDB | null> {
-    return this.model.findOne({ where: { username } });
+  async findUserById(uuid: string): Promise<User | null> {
+    const model = await this.model.findByPk(uuid);
+    return model ? this.toDomain(model) : null;
   }
 
-  async findDuplicate(email: string, cpf?: string | null, excludeUuid?: string): Promise<UserDB | null> {
+  async findUserByUsername(username: string): Promise<User | null> {
+    const model = await this.model.findOne({ where: { username } });
+    return model ? this.toDomain(model) : null;
+  }
+
+  async findUserDuplicateByEmailOrCpf(
+    email: string,
+    cpf?: string | null,
+    excludeUuid?: string,
+  ): Promise<boolean> {
     const candidates = cpf ? [{ email }, { cpf }] : [{ email }];
     const where: Record<PropertyKey, unknown> = { [Op.or]: candidates };
     if (excludeUuid) where.uuid = { [Op.ne]: excludeUuid };
-    return this.model.findOne({ where });
+    return Boolean(await this.model.findOne({ where }));
   }
 
-  async create(data: UserRequired & { username: string; password: string }): Promise<UserDB> {
-    return this.model.create(data);
+  async createNewUser(user: User): Promise<User> {
+    return this.toDomain(await this.model.create(user.toPersistence()));
   }
 
-  async list({ search, offset, limit }: UserListOptions): Promise<UserListResult> {
+  async listAllUserByFilter({
+    search,
+    offset,
+    limit,
+  }: UserListOptions): Promise<UserListResult> {
     const where = search
-      ? { [Op.or]: ["first_name", "last_name", "email"].map((field) => ({ [field]: { [Op.like]: `%${search}%` } })) }
+      ? {
+          [Op.or]: ["first_name", "last_name", "email"].map((field) => ({
+            [field]: { [Op.like]: `%${search}%` },
+          })),
+        }
       : {};
-    return this.model.findAndCountAll({
+    const result = await this.model.findAndCountAll({
       where,
-      attributes: { exclude: ["password", "cpf"] },
       offset,
       limit,
       order: [["createdAt", "DESC"]],
     });
+    return { count: result.count, rows: result.rows.map((row: UserDB) => this.toDomain(row)) };
   }
 
-  async save(user: UserDB): Promise<UserDB> {
-    return user.save();
+  async updateUser(user: User): Promise<User> {
+    if (!user.uuid) throw new Error("Cannot update user without uuid");
+    await this.model.update(user.toPersistence(), { where: { uuid: user.uuid } });
+    const updated = await this.model.findByPk(user.uuid);
+    if (!updated) throw new Error("User not found after update");
+    return this.toDomain(updated);
   }
 
-  async delete(user: UserDB): Promise<void> {
-    await user.destroy();
+  async deleteUser(uuid: string): Promise<void> {
+    await this.model.destroy({ where: { uuid } });
   }
 }
 

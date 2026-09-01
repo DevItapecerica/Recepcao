@@ -1,41 +1,51 @@
 import { Op } from "sequelize";
-import { IVisitorRepository, VisitorListOptions, VisitorListResult } from "../../../../core/repositories/visitor.repository.js";
-import { VisitorsRequired } from "../../../../core/types/visitorTypes.js";
+import { IVisitorRepository, VisitorListOptions, VisitorListResult } from "../../../../domain/repositories/visitor/visitor.repository.js";
 import db from "../index.js";
 import { Visitors } from "../models/visitors.model.js";
+import { Visitor } from "../../../../domain/entities/Visitor.js";
 
 export class SequelizeVisitorRepository implements IVisitorRepository {
   private get model() {
     return db.VisitorsModel;
   }
 
-  async findById(uuid: string): Promise<Visitors | null> {
-    return this.model.findByPk(uuid);
+  private toDomain(model: Visitors): Visitor {
+    return Visitor.create(model.get({ plain: true }));
   }
 
-  async findByCpf(cpf: string, excludeUuid?: string): Promise<Visitors | null> {
+  async findById(uuid: string): Promise<Visitor | null> {
+    const model = await this.model.findByPk(uuid);
+    return model ? this.toDomain(model) : null;
+  }
+
+  async findByCpf(cpf: string, excludeUuid?: string): Promise<Visitor | null> {
     const where: Record<string, unknown> = { cpf };
     if (excludeUuid) where.uuid = { [Op.ne]: excludeUuid };
-    return this.model.findOne({ where });
+    const model = await this.model.findOne({ where });
+    return model ? this.toDomain(model) : null;
   }
 
   async list({ search, offset, limit }: VisitorListOptions): Promise<VisitorListResult> {
     const where = search ? { name: { [Op.like]: `%${search}%` } } : {};
-    return this.model.findAndCountAll({
+    const result = await this.model.findAndCountAll({
       where,
-      attributes: { exclude: ["cpf"] },
       offset,
       limit,
       order: [["createdAt", "DESC"]],
     });
+    return { count: result.count, rows: result.rows.map((row: Visitors) => this.toDomain(row)) };
   }
 
-  async create(data: VisitorsRequired): Promise<Visitors> {
-    return this.model.create(data);
+  async create(visitor: Visitor): Promise<Visitor> {
+    return this.toDomain(await this.model.create({ ...visitor }));
   }
 
-  async save(visitor: Visitors): Promise<Visitors> {
-    return visitor.save();
+  async save(visitor: Visitor): Promise<Visitor> {
+    if (!visitor.uuid) throw new Error("Cannot update visitor without uuid");
+    await this.model.update({ ...visitor }, { where: { uuid: visitor.uuid } });
+    const updated = await this.model.findByPk(visitor.uuid);
+    if (!updated) throw new Error("Visitor not found after update");
+    return this.toDomain(updated);
   }
 
   async deleteById(uuid: string): Promise<boolean> {

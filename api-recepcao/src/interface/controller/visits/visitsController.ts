@@ -14,6 +14,8 @@ export const getVisits = async (
 
     const response = await VisitsService.listVisits(query);
 
+    if (!response.ok) throw response;
+
     reply.status(200).send({
       message: response.message,
       visits: response.visits,

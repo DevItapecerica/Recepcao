@@ -1,6 +1,7 @@
 import { FastifyRequest } from "fastify";
 import { decodeToken } from "../utils/DecodeToken.js";
-import { UserService } from "../../application/service/UserService.js";
+import { AppError } from "../types/errorTypes.js";
+import { SequelizeUserRepository } from "../../infra/database/sequelize/repositories/sequelize.user.repository.js";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -12,29 +13,33 @@ declare module "fastify" {
 }
 
 export const authJWT = async (request: FastifyRequest) => {
+  const sequelizeUserRepository = new SequelizeUserRepository();
+
   const token: string | undefined = request.headers.authorization?.replace(
     "Bearer ",
-    ""
+    "",
   );
 
   if (!token) {
-    throw { ok: false, code: 401, message: "Token not provider" };
+    throw new AppError("Token not provider", 401, "UNAUTHORIZED");
   }
 
   const tokenResult = await decodeToken(token);
 
   if (!tokenResult.ok) {
-    throw {
-      message: tokenResult.message || "Invalid Token",
-      code: tokenResult.code || 401,
-      ok: false,
-    };
+    throw new AppError(
+      tokenResult.message,
+      tokenResult.code || 401,
+      "UNAUTHORIZED",
+    );
   }
 
-  const userResult = await UserService.findUserByPK(tokenResult.uuid);
+  const userResult = await sequelizeUserRepository.findUserById(
+    tokenResult.uuid,
+  );
 
   if (!userResult) {
-    throw { message: "User Inválid", code: 401, ok: false };
+    throw new AppError("User not found", 404, "NOT_FOUND");
   }
 
   request.user = {

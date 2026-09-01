@@ -4,8 +4,8 @@ import {
   VisitorsGenericResponse,
   VisitorsRequired,
 } from "../../core/types/visitorTypes.js";
-import validatorCPF from "../../core/utils/validatorCPF.js";
 import { visitorRepository } from "../../infra/database/sequelize/repositories/sequelize.visitor.repository.js";
+import { Visitor } from "../../domain/entities/Visitor.js";
 
 const isDuplicateUser = async (cpf?: string | null, excludeUuid?: string) => {
   if (!cpf) return null;
@@ -69,8 +69,8 @@ export class VisitorsService {
   static async createVisitor(
     visitorData: VisitorsRequired
   ): Promise<VisitorsGenericResponse> {
-    const cpfValidation = validatorCPF(visitorData.cpf);
-    if (!cpfValidation.ok) {
+    const visitor = Visitor.create(visitorData);
+    if (!visitor.isValidCpf()) {
       throw {
         ok: false,
         code: 403,
@@ -87,7 +87,7 @@ export class VisitorsService {
       };
     }
 
-    const newVisitor = await visitorRepository.create(visitorData);
+    const newVisitor = await visitorRepository.create(visitor);
     return {
       ok: true,
       message: "Visitante criado com sucesso",

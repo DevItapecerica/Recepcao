@@ -5,7 +5,7 @@ import {
   VisitsWithAssociation,
   VisitsResponse,
 } from "../../core/types/visitsTypes.js";
-import { Visits } from "../../infra/database/sequelize/models/visits.model.js";
+import { Visit } from "../../domain/entities/Visit.js";
 import { visitRepository } from "../../infra/database/sequelize/repositories/sequelize.visit.repository.js";
 import { userRepository } from "../../infra/database/sequelize/repositories/sequelize.user.repository.js";
 import { visitorRepository } from "../../infra/database/sequelize/repositories/sequelize.visitor.repository.js";
@@ -28,34 +28,34 @@ export class VisitsService {
     };
     const offset = Number(page) * Number(limit);
 
-    const { count, rows }: { count: number; rows: Visits[] } = await visitRepository.list({
+    const { count, rows } = await visitRepository.list({
       search,
       offset,
       limit: Number(limit),
     });
 
     const visits: VisitsResponse[] = rows.map((visit) => {
-      const v = visit.toJSON() as VisitsWithAssociation;
+      const v = visit;
 
       return {
-        uuid: v.uuid,
+        uuid: v.uuid!,
         creator_uuid: v.creator_uuid,
         creator: {
-          uuid: v.Creator?.uuid,
-          role: v.Creator?.role,
-          username: v.Creator?.username,
+          uuid: v.creator?.uuid,
+          role: v.creator?.role,
+          username: v.creator?.username,
         },
         visitor_uuid: v.visitor_uuid,
         visitor: {
-          uuid: v.Visitor?.uuid,
-          name: v.Visitor?.name,
-          photo: v.Visitor?.photo ?? null,
+          uuid: v.visitor?.uuid,
+          name: v.visitor?.name,
+          photo: v.visitor?.photo ?? null,
         },
         subject: v.subject,
         date: v.date,
-        createdAt: v.createdAt,
-        updatedAt: v.updatedAt,
-        deletedAt: v.deletedAt,
+        createdAt: v.createdAt!,
+        updatedAt: v.updatedAt!,
+        deletedAt: v.deletedAt ?? null,
       };
     });
 
@@ -79,7 +79,7 @@ export class VisitsService {
     visitsData: VisitsRequired
   ): Promise<VisitsGenericResponse> {
     const visitor = await visitorRepository.findById(visitsData.visitor_uuid);
-    const creator = await userRepository.findById(visitsData.creator_uuid);
+    const creator = await userRepository.findUserById(visitsData.creator_uuid);
 
     if (!visitor || !creator) {
       return {
@@ -89,7 +89,7 @@ export class VisitsService {
       };
     }
 
-    const newVisits = await visitRepository.create(visitsData);
+    const newVisits = await visitRepository.create(Visit.create(visitsData));
 
     return {
       ok: true,
@@ -121,26 +121,26 @@ export class VisitsService {
     }
 
     const visitsResponse: VisitsResponse[] = visits.map((visit) => {
-      const v = visit.toJSON() as VisitsWithAssociation;
+      const v = visit;
       return {
-        uuid: v.uuid,
+        uuid: v.uuid!,
         creator_uuid: v.creator_uuid,
         creator: {
-          uuid: v.Creator?.uuid,
-          role: v.Creator?.role,
-          username: v.Creator?.username,
+          uuid: v.creator?.uuid,
+          role: v.creator?.role,
+          username: v.creator?.username,
         },
         visitor_uuid: v.visitor_uuid,
         visitor: {
-          uuid: v.Visitor?.uuid,
-          name: v.Visitor?.name,
-          photo: v.Visitor?.photo ?? null,
+          uuid: v.visitor?.uuid,
+          name: v.visitor?.name,
+          photo: v.visitor?.photo ?? null,
         },
         subject: v.subject,
         date: v.date,
-        createdAt: v.createdAt,
-        updatedAt: v.updatedAt,
-        deletedAt: v.deletedAt,
+        createdAt: v.createdAt!,
+        updatedAt: v.updatedAt!,
+        deletedAt: v.deletedAt ?? null,
       };
     });
 

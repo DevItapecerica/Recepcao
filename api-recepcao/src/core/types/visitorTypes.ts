@@ -1,4 +1,4 @@
-import { Visitors as VisitorsDB } from "../../infra/database/sequelize/models/visitors.model.js";
+import { Visitor } from "../../domain/entities/Visitor.js";
 
 export interface VisitorsParams {
   uuid: string;
@@ -17,35 +17,22 @@ export interface VisitorsRequired {
 }
 
 // response to methodes
-interface getVisitorsSucess {
-  ok: true;
+export type getVisitors = {
   message: string;
-  visitor: VisitorsDB[];
+  visitor: Visitor[];
   count: number;
 }
 
-interface getVisitorsFail {
-  ok: false;
-  code: number;
-  message: string;
-}
-
-export type GetVisitorssResponse = getVisitorsSucess | getVisitorsFail;
-
-interface VisitorsSuccessful {
+export type GetVisitorssResponse = {
   ok: true;
   message: string;
-  visitor?: VisitorsDB;
-}
+  visitor: Visitor[];
+  count: number;
+};
 
-interface VisitorsFail {
-  ok: false;
-  error?: any;
-  code: number;
-  message: string;
-}
-
-export type VisitorsGenericResponse = VisitorsSuccessful | VisitorsFail;
+export type VisitorsGenericResponse =
+  | { ok: true; message: string; visitor?: Visitor }
+  | { ok: false; code: number; message: string; error?: unknown };
 
 export type VisitorsQueryParams = {
   search?: string;

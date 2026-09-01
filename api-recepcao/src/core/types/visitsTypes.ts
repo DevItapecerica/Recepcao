@@ -1,6 +1,6 @@
-import { UserDB } from "../../infra/database/sequelize/models/user.model.js";
-import { Visitors } from "../../infra/database/sequelize/models/visitors.model.js";
-import { Visits as VisitsDB } from "../../infra/database/sequelize/models/visits.model.js";
+import { User } from "../../domain/entities/User.js";
+import { Visitor } from "../../domain/entities/Visitor.js";
+import { Visit } from "../../domain/entities/Visit.js";
 
 export interface VisitsParams {
   uuid: string;
@@ -13,9 +13,9 @@ export interface VisitsRequired {
   date: string;
 }
 
-export interface VisitsWithAssociation extends VisitsDB {
-  Visitor?: Visitors;
-  Creator?: UserDB;
+export interface VisitsWithAssociation extends Visit {
+  visitor?: Visitor;
+  creator?: User;
 }
 
 // bulk
@@ -38,7 +38,7 @@ export type GetVisitsResponse = getVisitsSucess | getVisitsFail;
 interface VisitsSuccessfull {
   ok: true;
   message: string;
-  visits: VisitsDB;
+  visits: Visit;
 }
 
 interface VisitsFail {

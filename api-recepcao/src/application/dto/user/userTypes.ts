@@ -1,4 +1,4 @@
-import { UserDB } from "../../../infra/database/sequelize/models/user.model.js";
+import { User, UserRole } from "../../../domain/entities/User.js";
 
 // Base Types
 export interface UserParams {
@@ -8,7 +8,7 @@ export interface UserParams {
 export interface UserRequired {
   first_name: string;
   last_name: string;
-  role: "admin" | "user" | "recepcionist" | "superadmin";
+  role: UserRole;
   email: string;
   password?: string;
   cpf: string;
@@ -17,18 +17,18 @@ export interface UserRequired {
 // response to methodes
 export type GetUser = {
   message: string;
-  user: UserDB[] | null;
+  user: User[] | null;
   count: number;
 }
 
 export type UserGenericResponse = {
   message: string;
-  user: UserDB
+  user: User
 }
 
 export type GetOneUser = {
   message: string;
-  user: UserDB | null;
+  user: User | null;
 }
 
 export type GenericResponse = {

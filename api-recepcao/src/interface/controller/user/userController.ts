@@ -4,58 +4,57 @@ import {
   UserQueryParams,
   UserRequired,
 } from "../../../application/dto/user/userTypes.js";
-import { UserService } from "../../../application/service/UserService.js";
+import { UserFactory } from "../../factories/user/user.factory.js";
 
+export class UserController {
+  private readonly userService = new UserFactory().userService()
 
-export const createUserController = async (
-  request: FastifyRequest<{ Body: UserRequired }>,
-  reply: FastifyReply,
-) => {
-  const data = request.body;
+  createUserController = async (
+    request: FastifyRequest<{ Body: UserRequired }>,
+    reply: FastifyReply,
+  ) => {
+    const data = request.body;
 
-  const result = await UserService.CreateUser(data);
+    const result = await this.userService.CreateUser(data);
 
-  reply
-    .status( 201)
-    .send({ message: result.message, newUser: result.user });
-};
+    reply.status(201).send({ message: result.message, newUser: result.user });
+  };
 
-export const getUsersController = async (
-  request: FastifyRequest<{ Querystring: UserQueryParams }>,
-  reply: FastifyReply,
-) => {
-  const query = request.query;
+  getUsersController = async (
+    request: FastifyRequest<{ Querystring: UserQueryParams }>,
+    reply: FastifyReply,
+  ) => {
+    const query = request.query;
 
-  const response = await UserService.listUsers(query);
+    const response = await this.userService.listUsers(query);
 
-  reply.status(200).send({
-    message: response.message,
-    user: response.user,
-    count: response.count,
-  });
-};
+    reply.status(200).send({
+      message: response.message,
+      user: response.user,
+      count: response.count,
+    });
+  };
 
-export const updateUserController = async (
-  request: FastifyRequest<{ Params: UserParams; Body: UserRequired }>,
-  reply: FastifyReply,
-) => {
-  const data = request.body;
-  const { uuid } = request.params;
+  updateUserController = async (
+    request: FastifyRequest<{ Params: UserParams; Body: UserRequired }>,
+    reply: FastifyReply,
+  ) => {
+    const data = request.body;
+    const { uuid } = request.params;
 
-  const result = await UserService.alterUser(uuid, data);
+    const result = await this.userService.alterUser(uuid, data);
 
-  reply
-    .status(200)
-    .send({ message: result.message, user: result.user });
-};
+    reply.status(200).send({ message: result.message, user: result.user });
+  };
 
-export const deleteUserController = async (
-  request: FastifyRequest<{ Params: UserParams }>,
-  reply: FastifyReply,
-) => {
-  const { uuid } = request.params;
+  deleteUserController = async (
+    request: FastifyRequest<{ Params: UserParams }>,
+    reply: FastifyReply,
+  ) => {
+    const { uuid } = request.params;
 
-  const result = await UserService.deleteUser(uuid);
+    const result = await this.userService.deleteUser(uuid);
 
-  reply.status(200).send({ message: result.message, user: result.user });
-};
+    reply.status(200).send({ message: result.message, user: result.user });
+  };
+}

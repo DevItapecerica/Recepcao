@@ -3,6 +3,7 @@ import { loginController } from "../controller/auth/loginController.js";
 import { ValidateTokenController } from "../controller/auth/validateTokenController.js";
 import { AlterPwdController } from "../controller/auth/alterpwdController.js";
 import { authJWT } from "../../core/middleware/authJWT.js";
+import { errorSchema } from "../../core/shared/schema/errorSchema.js";
 
 export async function loginRouter(app: FastifyInstance) {
   app.route({
@@ -136,18 +137,7 @@ export async function loginRouter(app: FastifyInstance) {
             ok: { type: "boolean", example: true },
           },
         },
-        401: {
-          properties: {
-            message: { type: "string", example: "Invallid token" },
-            ok: { type: "boolean", example: false },
-          },
-        },
-        500: {
-          properties: {
-            message: { type: "string", example: "Internal Error" },
-            ok: { type: "boolean", example: false },
-          },
-        },
+        ...errorSchema,
       },
     },
     handler: AlterPwdController,

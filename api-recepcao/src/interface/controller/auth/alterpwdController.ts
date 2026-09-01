@@ -1,5 +1,7 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { UserService } from "../../../application/service/UserService.js";
+import { UserFactory } from "../../factories/user/user.factory.js";
+
+const userService = new UserFactory().userService();
 
 export const AlterPwdController = async (
   request: FastifyRequest<{
@@ -9,7 +11,7 @@ export const AlterPwdController = async (
 ) => {
   const { old_password, new_password } = request.body;
 
-  const result = await UserService.alterPassword(
+  const result = await userService.alterPassword(
     request.user.uuid,
     old_password,
     new_password,

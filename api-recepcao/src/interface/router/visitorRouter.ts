@@ -8,6 +8,7 @@ import {
 
 import { authJWT } from "../../core/middleware/authJWT.js";
 import { checkPermissions } from "../../core/middleware/checkPermissions.js";
+import { errorSchema } from "../../core/shared/schema/errorSchema.js";
 
 const visitorParams = {
   type: "object",
@@ -123,12 +124,7 @@ export async function visitorRouter(app: FastifyInstance) {
             visitor: visitorResponse,
           },
         },
-        500: {
-          type: "object",
-          properties: {
-            message: { type: "string" },
-          },
-        },
+        ...errorSchema,
       },
     },
     handler: createVisitorController,
@@ -155,12 +151,7 @@ export async function visitorRouter(app: FastifyInstance) {
             message: { type: "string" },
           },
         },
-        500: {
-          type: "object",
-          properties: {
-            message: { type: "string" },
-          },
-        },
+        ...errorSchema,
       },
     },
     handler: deleteVisitorController,
@@ -188,12 +179,7 @@ export async function visitorRouter(app: FastifyInstance) {
             message: { type: "string" },
           },
         },
-        500: {
-          type: "object",
-          properties: {
-            message: { type: "string" },
-          },
-        },
+        ...errorSchema,
       },
     },
     handler: updateVisitorController,

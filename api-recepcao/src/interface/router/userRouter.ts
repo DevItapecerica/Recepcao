@@ -1,13 +1,8 @@
 import { FastifyInstance } from "fastify";
-import {
-  createUserController,
-  deleteUserController,
-  getUsersController,
-  updateUserController,
-} from "../controller/user/userController.js";
-import { APPLICATION_ENVORIMENT } from "../../core/config/env.js";
 import { authJWT } from "../../core/middleware/authJWT.js";
 import { checkPermissions } from "../../core/middleware/checkPermissions.js";
+import { UserController } from "../controller/user/userController.js";
+import { errorSchema } from "../../core/shared/schema/errorSchema.js";
 
 const userSchema = {
   type: "object",
@@ -51,6 +46,8 @@ export async function userRouter(app: FastifyInstance) {
   app.addHook("preHandler", authJWT);
   app.addHook("preHandler", checkPermissions);
 
+  const userController = new UserController();
+
   app.route({
     method: "POST",
     url: "/",
@@ -76,37 +73,10 @@ export async function userRouter(app: FastifyInstance) {
             newUser: responseUserSchema,
           },
         },
-        400: {
-          description: "Bad Request",
-          type: "object",
-          properties: {
-            message: { type: "string", example: "Invalid input data" },
-          },
-        },
-        401: {
-          description: "Unauthorized",
-          type: "object",
-          properties: {
-            message: { type: "string", example: "Unauthorized" },
-          },
-        },
-        403: {
-          description: "Forbidden",
-          type: "object",
-          properties: {
-            message: { type: "string", example: "User already exists" },
-          },
-        },
-        500: {
-          description: "Internal Server Error",
-          type: "object",
-          properties: {
-            message: { type: "string", example: "Impossible create user" },
-          },
-        },
+        ...errorSchema,
       },
     },
-    handler: createUserController, // Seu controlador
+    handler: userController.createUserController, // Seu controlador
   });
 
   app.route({
@@ -133,44 +103,10 @@ export async function userRouter(app: FastifyInstance) {
             user: responseUserSchema,
           },
         },
-        400: {
-          description: "Bad Request",
-          type: "object",
-          properties: {
-            message: { type: "string", example: "Invalid input data" },
-          },
-        },
-        401: {
-          description: "Unauthorized",
-          type: "object",
-          properties: {
-            message: { type: "string", example: "Unauthorized" },
-          },
-        },
-        403: {
-          description: "Forbidden",
-          type: "object",
-          properties: {
-            message: { type: "string", example: "User already exists" },
-          },
-        },
-        404: {
-          description: "Not Found",
-          type: "object",
-          properties: {
-            message: { type: "string", example: "User not found" },
-          },
-        },
-        500: {
-          description: "Internal Server Error",
-          type: "object",
-          properties: {
-            message: { type: "string", example: "Impossible create user" },
-          },
-        },
+        ...errorSchema,
       },
     },
-    handler: updateUserController, // Seu controlador
+    handler: userController.updateUserController, // Seu controlador
   });
 
   app.route({
@@ -200,23 +136,10 @@ export async function userRouter(app: FastifyInstance) {
             message: { type: "string" },
           },
         },
-        401: {
-          description: "Unauthorized",
-          type: "object",
-          properties: {
-            message: { type: "string", example: "Unauthorized" },
-          },
-        },
-        500: {
-          description: "Internal Server Error",
-          type: "object",
-          properties: {
-            message: { type: "string", example: "Impossible list users" },
-          },
-        },
+        ...errorSchema,
       },
     },
-    handler: getUsersController,
+    handler: userController.getUsersController,
   });
 
   app.route({
@@ -241,29 +164,9 @@ export async function userRouter(app: FastifyInstance) {
             message: { type: "string", example: "user deleted successfully" },
           },
         },
-        401: {
-          description: "Unauthorized",
-          type: "object",
-          properties: {
-            message: { type: "string", example: "Unauthorized" },
-          },
-        },
-        404: {
-          description: "Not Found",
-          type: "object",
-          properties: {
-            message: { type: "string", example: "User not found" },
-          },
-        },
-        500: {
-          description: "Internal Server Error",
-          type: "object",
-          properties: {
-            message: { type: "string", example: "Impossible Delete user" },
-          },
-        },
+        ...errorSchema,
       },
     },
-    handler: deleteUserController, // Seu controlador
+    handler: userController.deleteUserController, // Seu controlador
   });
 }

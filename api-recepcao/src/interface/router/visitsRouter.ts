@@ -7,6 +7,7 @@ import {
   getVisitsByVisitorId,
   postVisits,
 } from "../controller/visits/visitsController.js";
+import { errorSchema } from "../../core/shared/schema/errorSchema.js";
 
 const visitsParams = {
   type: "object",
@@ -130,12 +131,7 @@ export async function visitsRouter(app: FastifyInstance) {
             count: { type: "integer" },
           },
         },
-        500: {
-          type: "object",
-          properties: {
-            message: { type: "string" },
-          },
-        },
+        ...errorSchema,
       },
     },
     handler: getVisits,
@@ -163,12 +159,7 @@ export async function visitsRouter(app: FastifyInstance) {
             visits: { type: "array", item: visitById },
           },
         },
-        500: {
-          type: "object",
-          properties: {
-            message: { type: "string" },
-          },
-        },
+        ...errorSchema,
       },
     },
     handler: getVisitsByVisitorId,
@@ -201,12 +192,7 @@ export async function visitsRouter(app: FastifyInstance) {
             },
           },
         },
-        500: {
-          type: "object",
-          properties: {
-            message: { type: "string" },
-          },
-        },
+        ...errorSchema,
       },
     },
     handler: postVisits,
