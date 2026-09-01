@@ -3,7 +3,7 @@ import {
   UserParams,
   UserQueryParams,
   UserRequired,
-} from "../../../core/types/userTypes.js";
+} from "../../../application/dto/user/userTypes.js";
 import { UserService } from "../../../application/service/UserService.js";
 
 
@@ -14,10 +14,6 @@ export const createUserController = async (
   const data = request.body;
 
   const result = await UserService.CreateUser(data);
-
-  if (!result.ok) {
-    return reply.status(result.code).send({ message: result.message });
-  }
 
   reply
     .status(result.code || 201)
@@ -31,10 +27,6 @@ export const getUsersController = async (
   const query = request.query;
 
   const response = await UserService.listUsers(query);
-
-  if (!response.ok) {
-    return reply.status(response.code).send({ message: response.message });
-  }
 
   reply.status(200).send({
     message: response.message,
@@ -51,10 +43,6 @@ export const updateUserController = async (
   const { uuid } = request.params;
 
   const result = await UserService.alterUser(uuid, data);
-
-  if (!result.ok) {
-    return reply.status(result.code).send({ message: result.message });
-  }
 
   reply
     .status(result.code || 201)

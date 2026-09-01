@@ -1,6 +1,6 @@
 import { Op } from "sequelize";
 import { IUserRepository, UserListOptions, UserListResult } from "../../../../core/repositories/user.repository.js";
-import { UserRequired } from "../../../../core/types/userTypes.js";
+import { UserRequired } from "../../../../application/dto/user/userTypes.js";
 import db from "../index.js";
 import { UserDB } from "../models/user.model.js";
 

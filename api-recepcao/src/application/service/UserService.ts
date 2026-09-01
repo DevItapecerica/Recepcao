@@ -1,16 +1,17 @@
 import bcrypt from "bcryptjs";
 import {
+    GenericResponse,
+  GetOneUser,
+  GetUser,
   UserGenericResponse,
   UserQueryParams,
-  GetUserGenericResponse,
-  GenericResponse,
   UserRequired,
-} from "../../core/types/userTypes.js";
+} from "../dto/user/userTypes.js";
 import validatorCPF from "../../core/utils/validatorCPF.js";
 import { generateStrongPassword } from "../../core/utils/passwordGenerator.js";
 import { sendMail } from "../../core/utils/sendMail.js";
 import { APPLICATION_ENVORIMENT } from "../../core/config/env.js";
-import { UserDB } from "../../infra/database/sequelize/models/user.model.js";
+
 import { AppError } from "../../core/types/errorTypes.js";
 import { userRepository } from "../../infra/database/sequelize/repositories/sequelize.user.repository.js";
 
@@ -22,47 +23,50 @@ const isValidRole = (role: string) =>
 const isDuplicateUser = async (
   email: string,
   cpf?: string | null,
-  excludeUuid?: string
+  excludeUuid?: string,
 ) => {
   return userRepository.findDuplicate(email, cpf, excludeUuid);
 };
 
 export class UserService {
-  static async findUserByUsername(username: string): Promise<UserDB | null> {
+  static async findUserByUsername(
+    username: string,
+  ): Promise<GetOneUser | null> {
     const user = await userRepository.findByUsername(username);
-    return user ? (user.toJSON() as UserDB) : null;
+    return { user, message: "User Retrieved Successfully" };
   }
 
-  static async findUserByPK(uuid: string): Promise<UserDB | null> {
-    return userRepository.findById(uuid);
+  static async findUserByPK(uuid: string): Promise<GetOneUser | null> {
+    const user = await userRepository.findById(uuid);
+
+    if (!user) {
+      throw new AppError("User not found", 404, "NOT_FOUND");
+    }
+
+    return { user, message: "User Retrieved Successfully" };
   }
 
   static async CreateUser(data: UserRequired): Promise<UserGenericResponse> {
     // Validações
     if (!isValidRole(data.role)) {
-      throw new AppError("the field 'role' must be 'admin', 'user', 'recepcionist' or 'superadmin'", 400);
+      throw new AppError(
+        "the field 'role' must be 'admin', 'user', 'recepcionist' or 'superadmin'",
+        400,
+      );
     }
 
     validatorCPF(data.cpf);
-    
+
     // Verifica duplicidade
     if (await isDuplicateUser(data.email, data.cpf)) {
-      return {
-        ok: false,
-        code: 403,
-        message: "Usuário Já existe",
-      };
+      throw new AppError("User already exists", 409, "DUPLICATE_USER");
     }
 
     // Define username e criptografa senha
     const username = `${data.first_name}.${data.last_name}`.toLowerCase();
     let password = null;
 
-    if (APPLICATION_ENVORIMENT == "dev") {
-      password = data.password || generateStrongPassword();
-    } else {
-      password = generateStrongPassword();
-    }
+    password = generateStrongPassword();
 
     const hashPassword = await bcrypt.hash(password, 10);
 
@@ -76,46 +80,33 @@ export class UserService {
     await sendMail(
       data.email,
       "Reception Password",
-      `Your password is: ${password}`
+      `Your password is: ${password}`,
     );
 
     return {
-      ok: true,
-      code: 201,
       message: "Usuário criado com sucesso.",
-      user: newUser.toJSON(),
+      user: newUser,
     };
   }
 
   static async alterUser(
     id: string,
-    data: UserRequired
+    data: UserRequired,
   ): Promise<UserGenericResponse> {
     const user = await userRepository.findById(id);
 
     if (!user) {
-      return {
-        ok: false,
-        code: 404,
-        message: "Usuário não encontrado",
-      };
+      throw new AppError("User not found", 404, "NOT_FOUND");
     }
 
     if (!isValidRole(data.role)) {
-      return {
-        ok: false,
-        code: 400,
-        message:
-          "O campo 'role' deve ser 'admin', 'user', 'recepcionist' ou 'superadmin'",
-      };
+      throw new AppError(
+        "the field 'role' must be 'admin', 'user', 'recepcionist' or 'superadmin'", 400
+      )
     }
 
     if (await isDuplicateUser(data.email, null, id)) {
-      return {
-        ok: false,
-        code: 403,
-        message: "Usuário Já existe",
-      };
+      throw new AppError("User already exists", 409, "DUPLICATE_USER");
     }
 
     // Atualiza campos
@@ -128,16 +119,14 @@ export class UserService {
     await userRepository.save(user);
 
     return {
-      ok: true,
-      code: 200,
       message: "Alterado com sucesso",
       user: user,
     };
   }
 
   static async listUsers(
-    query: UserQueryParams
-  ): Promise<GetUserGenericResponse> {
+    query: UserQueryParams,
+  ): Promise<GetUser> {
     const {
       page = "0",
       limit = "10",
@@ -157,57 +146,43 @@ export class UserService {
     });
 
     return {
-      ok: true,
       message: "Usuários encontrados com sucesso",
-      user: result.rows,
+      user: result.rows ,
       count: result.count,
     };
   }
 
-  static async deleteUser(uuid: string): Promise<GenericResponse> {
+  static async deleteUser(uuid: string): Promise<UserGenericResponse> {
     const user = await userRepository.findById(uuid);
 
     if (!user) {
-      return {
-        ok: false,
-        code: 404,
-        message: "Usuário não encontrado",
-      };
+      throw new AppError("User not found", 404, "NOT_FOUND");
     }
 
     await userRepository.delete(user);
 
     return {
-      ok: true,
-      code: 200,
       message: "user deleted successfully",
+      user: user,
     };
   }
 
   static async alterPassword(
     uuid: string,
     oldPassword: string,
-    newPassword: string
+    newPassword: string,
   ): Promise<GenericResponse> {
     const user = await userRepository.findById(uuid);
 
     if (!user) {
-      return {
-        ok: false,
-        code: 404,
-        message: "User not found",
-      };
+      throw new AppError("User not found", 404, "NOT_FOUND");
     }
 
     const valid =
       user.password && (await bcrypt.compare(oldPassword, user.password));
 
     if (!valid) {
-      return {
-        ok: false,
-        code: 403,
-        message: "Password incorrect",
-      };
+      throw new AppError("Old Password Inválid", 401, "UNAUTHORIZED");
     }
 
     const hashPassword = await bcrypt.hash(newPassword, 10);
@@ -216,8 +191,6 @@ export class UserService {
     await userRepository.save(user);
 
     return {
-      ok: true,
-      code: 200,
       message: "Password succefull altered",
     };
   }

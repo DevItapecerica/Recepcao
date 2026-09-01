@@ -1,5 +1,5 @@
 import { UserDB } from "../../infra/database/sequelize/models/user.model.js";
-import { UserRequired } from "../types/userTypes.js";
+import { UserRequired } from "../../application/dto/user/userTypes.js";
 
 export interface UserListOptions {
   search?: string;

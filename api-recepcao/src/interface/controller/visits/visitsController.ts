@@ -12,29 +12,14 @@ export const getVisits = async (
 ) => {
   const query = request.query;
 
-  try {
     const response = await VisitsService.listVisits(query);
-
-    if (!response.ok) {
-      throw {
-        ok: response.ok,
-        code: response.code || 500,
-        message: response.message || "Erro ao listar visitantes",
-      };
-    }
 
     reply.status(200).send({
       message: response.message,
       visits: response.visits,
       count: response.count,
     });
-  } catch (error: any) {
-    throw {
-      code: error.code || 500,
-      message: error.message || "erro interno no servidor",
-      ok: false,
-    };
-  }
+
 };
 
 export const getVisitsByVisitorId = async (
