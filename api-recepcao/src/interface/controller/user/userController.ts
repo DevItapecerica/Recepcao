@@ -16,7 +16,7 @@ export const createUserController = async (
   const result = await UserService.CreateUser(data);
 
   reply
-    .status(result.code || 201)
+    .status( 201)
     .send({ message: result.message, newUser: result.user });
 };
 
@@ -45,7 +45,7 @@ export const updateUserController = async (
   const result = await UserService.alterUser(uuid, data);
 
   reply
-    .status(result.code || 201)
+    .status(200)
     .send({ message: result.message, user: result.user });
 };
 
@@ -57,5 +57,5 @@ export const deleteUserController = async (
 
   const result = await UserService.deleteUser(uuid);
 
-  reply.status(result.code || 200).send({ message: result.message });
+  reply.status(200).send({ message: result.message, user: result.user });
 };
