@@ -5,14 +5,14 @@ import {
   GetUserGenericResponse,
   GenericResponse,
   UserRequired,
-} from "../core/types/userTypes.js";
-import validatorCPF from "../core/utils/validatorCPF.js";
-import { generateStrongPassword } from "../core/utils/passwordGenerator.js";
-import { sendMail } from "../core/utils/sendMail.js";
-import { APPLICATION_ENVORIMENT } from "../core/config/env.js";
-import { UserDB } from "../infra/database/sequelize/models/user.model.js";
-import { AppError } from "../core/types/errorTypes.js";
-import { userRepository } from "../infra/database/sequelize/repositories/sequelize.user.repository.js";
+} from "../../core/types/userTypes.js";
+import validatorCPF from "../../core/utils/validatorCPF.js";
+import { generateStrongPassword } from "../../core/utils/passwordGenerator.js";
+import { sendMail } from "../../core/utils/sendMail.js";
+import { APPLICATION_ENVORIMENT } from "../../core/config/env.js";
+import { UserDB } from "../../infra/database/sequelize/models/user.model.js";
+import { AppError } from "../../core/types/errorTypes.js";
+import { userRepository } from "../../infra/database/sequelize/repositories/sequelize.user.repository.js";
 
 // Função utilitária para validar role
 const isValidRole = (role: string) =>

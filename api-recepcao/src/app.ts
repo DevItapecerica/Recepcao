@@ -1,8 +1,8 @@
 import { FastifyInstance } from "fastify";
-import { loginRouter } from "./router/loginRouter.js";
-import { userRouter } from "./router/userRouter.js";
-import { visitorRouter } from "./router/visitorRouter.js";
-import { visitsRouter } from "./router/visitsRouter.js";
+import { loginRouter } from "./interface/router/loginRouter.js";
+import { userRouter } from "./interface/router/userRouter.js";
+import { visitorRouter } from "./interface/router/visitorRouter.js";
+import { visitsRouter } from "./interface/router/visitsRouter.js";
 
 const bootstrap = (fastify: FastifyInstance) => {
 

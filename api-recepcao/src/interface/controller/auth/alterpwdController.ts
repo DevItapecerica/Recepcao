@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { UserService } from "../../../service/UserService.js";
+import { UserService } from "../../../application/service/UserService.js";
 
 export const AlterPwdController = async (
   request: FastifyRequest<{

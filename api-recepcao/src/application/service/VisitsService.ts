@@ -4,11 +4,11 @@ import {
   VisitsRequired,
   VisitsWithAssociation,
   VisitsResponse,
-} from "../core/types/visitsTypes.js";
-import { Visits } from "../infra/database/sequelize/models/visits.model.js";
-import { visitRepository } from "../infra/database/sequelize/repositories/sequelize.visit.repository.js";
-import { userRepository } from "../infra/database/sequelize/repositories/sequelize.user.repository.js";
-import { visitorRepository } from "../infra/database/sequelize/repositories/sequelize.visitor.repository.js";
+} from "../../core/types/visitsTypes.js";
+import { Visits } from "../../infra/database/sequelize/models/visits.model.js";
+import { visitRepository } from "../../infra/database/sequelize/repositories/sequelize.visit.repository.js";
+import { userRepository } from "../../infra/database/sequelize/repositories/sequelize.user.repository.js";
+import { visitorRepository } from "../../infra/database/sequelize/repositories/sequelize.visitor.repository.js";
 
 export class VisitsService {
   static async listVisits(

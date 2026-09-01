@@ -4,11 +4,10 @@ import {
   deleteUserController,
   getUsersController,
   updateUserController,
-} from "../interface/controller/user/userController.js";
-
-import { authJWT } from "../core/middleware/authJWT.js";
-import { checkPermissions } from "../core/middleware/checkPermissions.js";
-import { APPLICATION_ENVORIMENT } from "../core/config/env.js";
+} from "../controller/user/userController.js";
+import { APPLICATION_ENVORIMENT } from "../../core/config/env.js";
+import { authJWT } from "../../core/middleware/authJWT.js";
+import { checkPermissions } from "../../core/middleware/checkPermissions.js";
 
 const userSchema = {
   type: "object",
@@ -49,13 +48,8 @@ const responseUserSchema = {
 };
 
 export async function userRouter(app: FastifyInstance) {
-  if (APPLICATION_ENVORIMENT != "dev") {
-    app.addHook("preHandler", authJWT);
-    app.addHook("preHandler", checkPermissions);
-  }
-
-  // app.addHook("preHandler", authJWT);
-  // app.addHook("preHandler", checkPermissions);
+  app.addHook("preHandler", authJWT);
+  app.addHook("preHandler", checkPermissions);
 
   app.route({
     method: "POST",

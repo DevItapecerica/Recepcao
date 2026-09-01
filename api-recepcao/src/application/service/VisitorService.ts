@@ -3,9 +3,9 @@ import {
   GetVisitorssResponse,
   VisitorsGenericResponse,
   VisitorsRequired,
-} from "../core/types/visitorTypes.js";
-import validatorCPF from "../core/utils/validatorCPF.js";
-import { visitorRepository } from "../infra/database/sequelize/repositories/sequelize.visitor.repository.js";
+} from "../../core/types/visitorTypes.js";
+import validatorCPF from "../../core/utils/validatorCPF.js";
+import { visitorRepository } from "../../infra/database/sequelize/repositories/sequelize.visitor.repository.js";
 
 const isDuplicateUser = async (cpf?: string | null, excludeUuid?: string) => {
   if (!cpf) return null;

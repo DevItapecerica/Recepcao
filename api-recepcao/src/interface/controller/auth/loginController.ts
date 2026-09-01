@@ -1,6 +1,6 @@
 import { FastifyRequest, FastifyReply } from "fastify";
+import { Auth } from "../../../application/service/AuthService.js";
 
-import { Auth } from "../../../service/AuthService.js";
 
 interface LoginRequestBody {
   username: string;

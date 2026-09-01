@@ -1,10 +1,10 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { UserService } from "./UserService.js";
-import { AuthResult } from "../core/types/authTypes.js";
 
-import { SECRET_KEY_JWT } from "../core/config/env.js";
-import { AppError } from "../core/types/errorTypes.js";
+import { AuthResult } from "../../core/types/authTypes.js";
+import { AppError } from "../../core/types/errorTypes.js";
+import { SECRET_KEY_JWT } from "../../core/config/env.js";
 
 export class Auth {
   static async Login(username: string, password: string): Promise<AuthResult> {
@@ -23,7 +23,7 @@ export class Auth {
 
     const token = jwt.sign(
       { uuid: user.uuid, name: user.username, role: user.role },
-      SECRET_KEY_JWT!,
+      SECRET_KEY_JWT,
       { expiresIn: "3h" }
     );
 

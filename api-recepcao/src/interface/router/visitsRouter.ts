@@ -1,12 +1,12 @@
 import { FastifyInstance } from "fastify";
 
-import { authJWT } from "../core/middleware/authJWT.js";
-import { checkPermissions } from "../core/middleware/checkPermissions.js";
+import { authJWT } from "../../core/middleware/authJWT.js";
+import { checkPermissions } from "../../core/middleware/checkPermissions.js";
 import {
   getVisits,
   getVisitsByVisitorId,
   postVisits,
-} from "../interface/controller/visits/visitsController.js";
+} from "../controller/visits/visitsController.js";
 
 const visitsParams = {
   type: "object",

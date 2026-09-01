@@ -4,8 +4,8 @@ import {
   UserQueryParams,
   UserRequired,
 } from "../../../core/types/userTypes.js";
+import { UserService } from "../../../application/service/UserService.js";
 
-import { UserService } from "../../../service/UserService.js";
 
 export const createUserController = async (
   request: FastifyRequest<{ Body: UserRequired }>,

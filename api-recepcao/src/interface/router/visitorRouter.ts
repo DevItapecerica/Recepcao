@@ -4,10 +4,10 @@ import {
   getVisitorsController,
   deleteVisitorController,
   updateVisitorController,
-} from "../interface/controller/visitors/visitorsController.js";
+} from "../controller/visitors/visitorsController.js";
 
-import { authJWT } from "../core/middleware/authJWT.js";
-import { checkPermissions } from "../core/middleware/checkPermissions.js";
+import { authJWT } from "../../core/middleware/authJWT.js";
+import { checkPermissions } from "../../core/middleware/checkPermissions.js";
 
 const visitorParams = {
   type: "object",
