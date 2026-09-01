@@ -164,7 +164,6 @@ const VisitorsModal = ({ visible, onHide }) => {
           <label className="font-medium">Nome</label>
           <InputText
             {...register("name", { required: "Obrigatório" })}
-            disabled={!!visitorTarget}
           />
           {errors.name && (
             <small className="text-red-500">{errors.name.message}</small>
@@ -177,6 +176,7 @@ const VisitorsModal = ({ visible, onHide }) => {
           <Controller
             name="cpf"
             control={control}
+            rules={{ required: !visitorTarget ? "Obrigatório" : false }}
             render={({ field }) => (
               <InputMask
                 {...field}

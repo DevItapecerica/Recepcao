@@ -29,7 +29,7 @@ export const ValidateTokenController = async (
     .status(200)
     .send({
       message: tokenResult.message,
-      token: {
+      user: {
         name: tokenResult.name,
         uuid: tokenResult.uuid,
         role: tokenResult.role,

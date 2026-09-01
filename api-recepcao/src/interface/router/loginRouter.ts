@@ -78,11 +78,16 @@ export async function loginRouter(app: FastifyInstance) {
       response: {
         200: {
           properties: {
-            uuid: { type: "string" },
-            role: { type: "string", example: "Admin" },
+            user: {
+              type: "object",
+              properties: {
+                uuid: { type: "string" },
+                name: { type: "string" },
+                role: { type: "string" },
+                firstLogin: { type: "boolean" },
+              },
+            },
             message: { type: "string", example: "Token validate Confirm" },
-            name: { type: "string", example: "Your.Username" },
-            ok: { type: "boolean", example: true },
           },
         },
         401: {

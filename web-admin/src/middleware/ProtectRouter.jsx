@@ -19,7 +19,10 @@ const ProtectRouter = () => {
   const Validate = async () => {
     attLoading(true);
     try {
-      const { name, role, uuid } = await validateToken();
+      const response = await validateToken();
+      console.log(response)
+      const { name, role, uuid } = response.user;
+      attImage(response.user.image);
       await attUser({ name, role, uuid });
     } catch (error) {
       if (error.status == 401) Logout();

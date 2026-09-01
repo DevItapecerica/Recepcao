@@ -5,7 +5,6 @@ function formatDateToQuery(date) {
 }
 
 export const getVisits = async (page, limit, search) => {
-  console.log(page, limit, search);
   const formattedDate = search ? formatDateToQuery(search) : null;
 
   const url = search

@@ -9,13 +9,23 @@ export const getVisitor = async (page, limit, search) => {
     headers: { Authorization: localStorage.getItem("token") },
   });
 
-  console.log(data);
-
   return data;
 };
 
 export const postVisitor = async (visitor) => {
-  const { data } = await API.post("/visitors", visitor, {
+  const payload = {
+    name: visitor.name,
+    cpf: visitor.cpf,
+    photo: visitor.photo || null,
+    email: visitor.email || null,
+    phone: visitor.phone || null,
+    address: visitor.address || null,
+    city: visitor.city || null,
+    state: visitor.state || null,
+    zipCode: visitor.zipCode || null,
+  };
+
+  const { data } = await API.post("/visitors", payload, {
     headers: { Authorization: localStorage.getItem("token") },
   });
 
@@ -23,7 +33,18 @@ export const postVisitor = async (visitor) => {
 };
 
 export const putVisitor = async (visitor, uuid) => {
-  const { data } = await API.put(`/visitors/${uuid}`, visitor, {
+  const payload = {
+    name: visitor.name,
+    photo: visitor.photo || null,
+    email: visitor.email || null,
+    phone: visitor.phone || null,
+    address: visitor.address || null,
+    city: visitor.city || null,
+    state: visitor.state || null,
+    zipCode: visitor.zipCode || null,
+  };
+
+  const { data } = await API.put(`/visitors/${uuid}`, payload, {
     headers: { Authorization: localStorage.getItem("token") },
   });
 

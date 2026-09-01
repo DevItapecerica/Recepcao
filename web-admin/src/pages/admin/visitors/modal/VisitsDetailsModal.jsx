@@ -14,7 +14,6 @@ import { useVisitors } from "@Context/visitors/VisitorsContext";
 import { addVisits, getVisitsByVisitorId } from "../../../../service/Visits";
 
 const addVisitorHistory = async (visitorId, newVisit) => {
-  console.log(`Salvando nova visita para o visitante ${visitorId}:`, newVisit);
   const response = await addVisits(visitorId, newVisit);
 
   // Em um caso real, a API retornaria o objeto salvo com um ID.
@@ -48,14 +47,12 @@ const VisitorDetailsModal = ({ visible, setVisible }) => {
   };
 
   const getVisitorHistory = async (visitorId) => {
-    console.log(`Buscando histórico para o visitante com ID: ${visitorId}`);
     try {
       const response = await getVisitsByVisitorId(visitorId);
 
       setHistory(response.visits);
       setLoading(false);
     } catch (error) {
-      console.log("Erro ao buscar histórico do visitante");
     } finally {
       setLoading(false);
     }
@@ -224,7 +221,6 @@ const VisitorDetailsModal = ({ visible, setVisible }) => {
                   value={field.value}
                   onChange={(e) => {
                     field.onChange(e.value);
-                    alert(e.value);
                   }}
                   showTime
                   hourFormat="24"
