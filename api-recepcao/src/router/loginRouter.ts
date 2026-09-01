@@ -3,12 +3,18 @@ import { loginController } from "../controller/auth/loginController.js";
 import { ValidateTokenController } from "../controller/auth/validateTokenController.js";
 import { AlterPwdController } from "../controller/auth/alterpwdController.js";
 import { authJWT } from "../core/middleware/authJWT.js";
-import fastifyRateLimit from "@fastify/rate-limit";
 
 export async function loginRouter(app: FastifyInstance) {
   app.route({
     method: "POST",
     url: "/",
+    config: {
+      audit: {
+        failureAction: "LOGIN",
+        module: "AUTH",
+        resourceType: "LOGIN",
+      },
+    },
     schema: {
       tags: ["Login"],
       description: "Let you make login using username and password",
@@ -52,6 +58,13 @@ export async function loginRouter(app: FastifyInstance) {
   app.route({
     method: "POST",
     url: "/verify",
+    config: {
+      audit: {
+        failureAction: "AUTH",
+        module: "AUTH",
+        resourceType: "AUTH",
+      },
+    },
     schema: {
       tags: ["Login"],
       summary: "Verify the Token's integrity",
@@ -92,6 +105,13 @@ export async function loginRouter(app: FastifyInstance) {
     method: "POST",
     url: "/alterpwd",
     preHandler: [authJWT],
+    config: {
+      audit: {
+        failureAction: "UPDATE",
+        module: "AUTH",
+        resourceType: "ALTERPWD",
+      },
+    },
     schema: {
       tags: ["Login"],
       summary: "Verify the Token's integrity",

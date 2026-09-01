@@ -110,6 +110,13 @@ export async function visitsRouter(app: FastifyInstance) {
   app.route({
     method: "GET",
     url: "/",
+    config: {
+      audit: {
+        failureAction: "LIST",
+        module: "VISITS",
+        resourceType: "VISITS",
+      },
+    },
     schema: {
       tags: ["Visits"],
       description: "Retrieve a list of Visits",
@@ -137,6 +144,13 @@ export async function visitsRouter(app: FastifyInstance) {
   app.route({
     method: "GET",
     url: "/visitor/:uuid",
+    config: {
+      audit: {
+        failureAction: "LIST",
+        module: "VISITS",
+        resourceType: "VISITS",
+      },
+    },
     schema: {
       tags: ["Visits"],
       description: "Retrieve a list of Visits",
@@ -163,6 +177,13 @@ export async function visitsRouter(app: FastifyInstance) {
   app.route({
     method: "POST",
     url: "/",
+    config: {
+      audit: {
+        failureAction: "CREATE",
+        module: "VISITS",
+        resourceType: "VISITS",
+      },
+    },
     schema: {
       tags: ["Visits"],
       description: "Post a new Visit",

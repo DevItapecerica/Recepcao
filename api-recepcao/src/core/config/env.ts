@@ -27,3 +27,5 @@ export const DATABASE_NAME = must("DATABASE_NAME");
 export const DATABASE_HOST = must("DATABASE_HOST");
 
 export const DATABASE_URL = must("DATABASE_URL");
+
+export const CORS_ORIGIN = must("CORS_ORIGIN");

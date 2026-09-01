@@ -10,10 +10,4 @@ export interface AuthSuccess {
   token: string;
 }
 
-export interface AuthFailure {
-  ok: false;
-  code: number;
-  message: string;
-}
-
-export type AuthResult = AuthSuccess | AuthFailure;
+export type AuthResult = AuthSuccess;

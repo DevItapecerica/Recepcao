@@ -65,6 +65,13 @@ export async function visitorRouter(app: FastifyInstance) {
   app.route({
     method: "GET",
     url: "/",
+    config: {
+      audit: {
+        failureAction: "LIST",
+        module: "VISITOR",
+        resourceType: "VISITOR",
+      },
+    },
     schema: {
       tags: ["Visitor"],
       description: "Retrieve a list of Visitors",
@@ -95,6 +102,13 @@ export async function visitorRouter(app: FastifyInstance) {
   app.route({
     method: "POST",
     url: "/",
+    config: {
+      audit: {
+        failureAction: "CREATE",
+        module: "VISITOR",
+        resourceType: "VISITOR",
+      },
+    },
     schema: {
       tags: ["Visitor"],
       description: "Create a new Visitor",
@@ -123,6 +137,13 @@ export async function visitorRouter(app: FastifyInstance) {
   app.route({
     method: "DELETE",
     url: "/:uuid",
+    config: {
+      audit: {
+        failureAction: "DELETE",
+        module: "VISITOR",
+        resourceType: "VISITOR",
+      },
+    },
     schema: {
       tags: ["Visitor"],
       description: "Delete a Visitor",
@@ -148,6 +169,13 @@ export async function visitorRouter(app: FastifyInstance) {
   app.route({
     method: "PUT",
     url: "/:uuid",
+    config: {
+      audit: {
+        failureAction: "UPDATE",
+        module: "VISITOR",
+        resourceType: "VISITOR",
+      },
+    },
     schema: {
       tags: ["Visitor"],
       description: "Update a Visitor",

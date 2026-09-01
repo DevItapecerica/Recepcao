@@ -60,6 +60,13 @@ export async function userRouter(app: FastifyInstance) {
   app.route({
     method: "POST",
     url: "/",
+    config: {
+      audit: {
+        failureAction: "CREATE",
+        module: "user",
+        resourceType: "user",
+      },
+    },
     schema: {
       tags: ["User"],
       description:
@@ -111,6 +118,13 @@ export async function userRouter(app: FastifyInstance) {
   app.route({
     method: "PUT",
     url: "/:uuid",
+    config: {
+      audit: {
+        failureAction: "UPDATE",
+        module: "user",
+        resourceType: "user",
+      },
+    },
     schema: {
       tags: ["User"],
       description: "Let you update Users and usage the application",
@@ -168,6 +182,13 @@ export async function userRouter(app: FastifyInstance) {
   app.route({
     method: "GET",
     url: "/",
+    config: {
+      audit: {
+        failureAction: "LIST",
+        module: "user",
+        resourceType: "user",
+      },
+    },
     schema: {
       tags: ["User"],
       description: "Get all users",
@@ -207,6 +228,13 @@ export async function userRouter(app: FastifyInstance) {
   app.route({
     method: "delete",
     url: "/:uuid",
+    config: {
+      audit: {
+        failureAction: "DELETE",
+        module: "user",
+        resourceType: "user",
+      },
+    },
     schema: {
       tags: ["User"],
       description: "Let you Delete Users in the application",

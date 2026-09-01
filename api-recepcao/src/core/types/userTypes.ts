@@ -1,4 +1,4 @@
-import { UserDB } from "../../infra/db/sequelize/models/user.js";
+import { UserDB } from "../../infra/database/sequelize/models/user.model.js";
 
 // Base Types
 export interface UserParams {

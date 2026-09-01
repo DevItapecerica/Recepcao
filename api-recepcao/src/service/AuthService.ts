@@ -4,20 +4,21 @@ import { UserService } from "./UserService.js";
 import { AuthResult } from "../core/types/authTypes.js";
 
 import { SECRET_KEY_JWT } from "../core/config/env.js";
+import { AppError } from "../core/types/errorTypes.js";
 
 export class Auth {
   static async Login(username: string, password: string): Promise<AuthResult> {
     const user = await UserService.findUserByUsername(username);
 
     if (!user) {
-      return { ok: false, code: 403, message: "Usuário ou senha inválidos" };
+      throw new AppError("Usuário ou senha inválidos", 401, "UNAUTHORIZED");
     }
 
     const valid =
       user.password && (await bcrypt.compare(password, user.password));
 
     if (!valid) {
-      return { ok: false, code: 403, message: "Usuário ou senha inválidos" };
+      throw new AppError("Usuário ou senha inválidos", 401, "UNAUTHORIZED");
     }
 
     const token = jwt.sign(

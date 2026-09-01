@@ -13,12 +13,7 @@ export const loginController = async (
   reply: FastifyReply
 ): Promise<void> => {
   const { username, password } = req.body;
-  const result: AuthResult = await Auth.Login(username, password);
-
-  if (!result.ok) {
-    reply.status(result.code).send({ message: result.message });
-    return;
-  }
+  const result = await Auth.Login(username, password);
 
   reply.status(200).send({
     message: "Login bem‑sucedido",

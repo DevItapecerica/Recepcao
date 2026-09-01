@@ -1,6 +1,5 @@
-export interface interfaceErrorResponse {
-    ok: boolean;
-    error?: any;
-    code: number;
-    message: string;
-}
+export class AppError extends Error {
+    constructor(public message: string, public statusCode: number, public error?: any) {
+        super(message);
+    }
+} 
