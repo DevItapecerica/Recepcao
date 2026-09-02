@@ -6,6 +6,7 @@ import {
   UserGenericResponse,
   UserQueryParams,
   UserRequired,
+  UserUpdate,
 } from "../dto/user/userTypes.js";
 import { generateStrongPassword } from "../../core/utils/passwordGenerator.js";
 import { sendMail } from "../../core/utils/sendMail.js";
@@ -14,6 +15,7 @@ import { AppError } from "../../core/types/errorTypes.js";
 import { UserPolicyDomainService } from "../../domain/services/user/userPolicy.domain.service.js";
 import { IUserRepository } from "../../domain/repositories/user/user.repository.js";
 import { User } from "../../domain/entities/User.js";
+import { parsePagination } from "../../core/utils/pagination.js";
 
 // Função utilitária para validar role
 
@@ -80,7 +82,7 @@ export class UserService {
 
   async alterUser(
     id: string,
-    data: UserRequired,
+    data: UserUpdate,
   ): Promise<UserGenericResponse> {
     const user = await this.userRepository.findUserById(id);
 
@@ -115,22 +117,12 @@ export class UserService {
   }
 
   async listUsers(query: UserQueryParams): Promise<GetUser> {
-    const {
-      page = "0",
-      limit = "10",
-      search = "",
-    } = query as {
-      page?: string;
-      limit?: string;
-      search?: string;
-    };
-
-    const offset = Number(page) * Number(limit);
+    const { search, offset, limit } = parsePagination(query);
 
     const result = await this.userRepository.listAllUserByFilter({
       search,
       offset,
-      limit: Number(limit),
+      limit,
     });
 
     return {

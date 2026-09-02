@@ -16,6 +16,7 @@ export class Visits extends Model<
   declare visitor_uuid: string;
   declare subject: string;
   declare date: string;
+  declare visitedAt: Date;
 
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
@@ -56,6 +57,11 @@ export default (sequelize: Sequelize, dataTypes: typeof DataTypes) => {
       date: {
         type: dataTypes.STRING,
         allowNull: false,
+      },
+      visitedAt: {
+        type: dataTypes.DATE,
+        allowNull: false,
+        field: "visited_at",
       },
       createdAt: {
         type: dataTypes.DATE,

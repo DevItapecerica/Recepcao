@@ -1,14 +1,23 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import {
   VisitsParams,
+  VisitsDashboardQuery,
   VisitsQueryParams,
   VisitsRequired,
-} from "../../../core/types/visitsTypes.js";
+} from "../../../application/dto/visit/visitTypes.js";
 import { AppError } from "../../../core/types/errorTypes.js";
 import { VisitFactory } from "../../factories/visit/visit.factory.js";
 
 export class VisitController {
   private readonly visitsService = new VisitFactory().visitService();
+
+  getDashboard = async (
+    request: FastifyRequest<{ Querystring: VisitsDashboardQuery }>,
+    reply: FastifyReply,
+  ): Promise<void> => {
+    const response = await this.visitsService.getDashboard(request.query);
+    reply.status(200).send(response);
+  };
 
   getVisits = async (
     request: FastifyRequest<{ Querystring: VisitsQueryParams }>,

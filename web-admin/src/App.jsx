@@ -22,6 +22,7 @@ import VisitsByDayTable from "./pages/admin/Visits/Visits";
 import { useProfile } from "./context/profile/ProfileContext";
 import Terms from "./pages/terms/Terms";
 import PrivacyPolicy from "./pages/terms/PrivacityPolicy";
+import Dashboard from "./pages/admin/dashboard/Dashboard";
 
 function App() {
   const { theme } = useThemeContext();
@@ -42,7 +43,8 @@ function App() {
 
             <Route path="/" element={<ProtectRouter />}>
               <Route path="/Admin" element={<Admin />}>
-                <Route index element={<Visitors />} />
+                <Route index element={<Dashboard />} />
+                <Route path="/Admin/Visitors" element={<Visitors />} />
                 <Route path="/Admin/Users" element={<Users />} />
                 {/* <Route path="/Admin/Calendar" element={<Calendar />} /> */}
                 <Route path="/Admin/Visits" element={<VisitsByDayTable />} />

@@ -1,15 +1,16 @@
 import {
   VisitsGenericResponse,
+  VisitsDashboardQuery,
   VisitsQueryParams,
   VisitsRequired,
-  VisitsWithAssociation,
   VisitsResponse,
-} from "../../core/types/visitsTypes.js";
+} from "../dto/visit/visitTypes.js";
 import { Visit } from "../../domain/entities/Visit.js";
 import { IVisitRepository } from "../../domain/repositories/visit/visit.repository.js";
 import { IUserRepository } from "../../domain/repositories/user/user.repository.js";
 import { IVisitorRepository } from "../../domain/repositories/visitor/visitor.repository.js";
 import { AppError } from "../../core/types/errorTypes.js";
+import { parsePagination } from "../../core/utils/pagination.js";
 
 export class VisitsService {
   constructor(
@@ -18,24 +19,77 @@ export class VisitsService {
     private readonly visitorRepository: IVisitorRepository,
   ) {}
 
+  async getDashboard(query: VisitsDashboardQuery) {
+    const hasOnlyOneDate = Boolean(query.dateFrom) !== Boolean(query.dateTo);
+    if (hasOnlyOneDate) {
+      throw new AppError(
+        "dateFrom and dateTo must be provided together",
+        400,
+        "INVALID_DATE_RANGE",
+      );
+    }
+
+    const now = new Date();
+    const defaultDateFrom = new Date(now.getFullYear(), now.getMonth(), 1);
+    const defaultDateTo = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    const dateFrom = query.dateFrom ?? this.formatDate(defaultDateFrom);
+    const dateTo = query.dateTo ?? this.formatDate(defaultDateTo);
+    const limit = query.limit === undefined ? 5 : Number(query.limit);
+
+    if (
+      !this.isValidDate(dateFrom) ||
+      !this.isValidDate(dateTo) ||
+      dateFrom > dateTo ||
+      !Number.isInteger(limit) ||
+      limit < 1 ||
+      limit > 20
+    ) {
+      throw new AppError("Invalid dashboard filters", 400, "INVALID_DASHBOARD_FILTERS");
+    }
+
+    const dashboard = await this.visitRepository.dashboard({
+      dateFrom,
+      dateTo,
+      limit,
+    });
+
+    return {
+      message: "Dashboard retrieved successfully",
+      period: { dateFrom, dateTo },
+      dashboard: {
+        ...dashboard,
+        mostFrequentVisitor: dashboard.ranking[0] ?? null,
+      },
+    };
+  }
+
+  private formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  private isValidDate(value: string): boolean {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+    const [year, month, day] = value.split("-").map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    return (
+      date.getUTCFullYear() === year &&
+      date.getUTCMonth() === month - 1 &&
+      date.getUTCDate() === day
+    );
+  }
+
   async listVisits(
     query: VisitsQueryParams
   ): Promise<{ message: string; visits: VisitsResponse[]; count: number }> {
-    const {
-      page = "0",
-      limit = "10",
-      search = "",
-    } = query as {
-      page?: string;
-      limit?: string;
-      search?: string;
-    };
-    const offset = Number(page) * Number(limit);
+    const { search, offset, limit } = parsePagination(query);
 
     const { count, rows } = await this.visitRepository.list({
       search,
       offset,
-      limit: Number(limit),
+      limit,
     });
 
     const visits: VisitsResponse[] = rows.map((visit) => {

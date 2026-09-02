@@ -1,9 +1,10 @@
 import { FastifyInstance } from "fastify";
 import { VisitorController } from "../controller/visitors/visitorsController.js";
 
-import { authJWT } from "../../core/middleware/authJWT.js";
+import { authJWT } from "../factories/auth/auth.factory.js";
 import { checkPermissions } from "../../core/middleware/checkPermissions.js";
 import { errorSchema } from "../../core/shared/schema/errorSchema.js";
+import { paginationQuerySchema, uuidParamsSchema } from "../../core/shared/schema/querySchemas.js";
 
 const visitorParams = {
   type: "object",
@@ -89,6 +90,7 @@ export async function visitorRouter(app: FastifyInstance) {
       tags: ["Visitor"],
       description: "Retrieve a list of Visitors",
       summary: "Get Visitors",
+      querystring: paginationQuerySchema,
       response: {
         200: {
           type: "object",
@@ -156,6 +158,7 @@ export async function visitorRouter(app: FastifyInstance) {
       tags: ["Visitor"],
       description: "Delete a Visitor",
       summary: "Delete Visitor",
+      params: uuidParamsSchema,
       response: {
         200: {
           type: "object",
@@ -183,6 +186,7 @@ export async function visitorRouter(app: FastifyInstance) {
       tags: ["Visitor"],
       description: "Update a Visitor",
       summary: "Update Visitor",
+      params: uuidParamsSchema,
       body: visitorUpdateParams,
       response: {
         200: {

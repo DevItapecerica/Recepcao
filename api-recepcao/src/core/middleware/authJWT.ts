@@ -1,7 +1,7 @@
 import { FastifyRequest } from "fastify";
 import { decodeToken } from "../utils/DecodeToken.js";
 import { AppError } from "../types/errorTypes.js";
-import { SequelizeUserRepository } from "../../infra/database/sequelize/repositories/sequelize.user.repository.js";
+import { IUserRepository } from "../../domain/repositories/user/user.repository.js";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -12,8 +12,7 @@ declare module "fastify" {
   }
 }
 
-export const authJWT = async (request: FastifyRequest) => {
-  const sequelizeUserRepository = new SequelizeUserRepository();
+export const createAuthJWT = (userRepository: IUserRepository) => async (request: FastifyRequest) => {
 
   const token: string | undefined = request.headers.authorization?.replace(
     "Bearer ",
@@ -34,7 +33,7 @@ export const authJWT = async (request: FastifyRequest) => {
     );
   }
 
-  const userResult = await sequelizeUserRepository.findUserById(
+  const userResult = await userRepository.findUserById(
     tokenResult.uuid,
   );
 

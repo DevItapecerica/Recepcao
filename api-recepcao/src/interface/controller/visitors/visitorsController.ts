@@ -3,8 +3,9 @@ import {
   VisitorUpdate,
   VisitorsQueryParams,
   VisitorsRequired,
-} from "../../../core/types/visitorTypes.js";
+} from "../../../application/dto/visitor/visitorTypes.js";
 import { VisitorFactory } from "../../factories/visitor/visitor.factory.js";
+import { presentVisitor } from "../../presenters/visitor.presenter.js";
 
 export class VisitorController {
   private readonly visitorService = new VisitorFactory().visitorService();
@@ -17,7 +18,7 @@ export class VisitorController {
 
     reply.status(200).send({
       message: response.message,
-      visitor: response.visitor,
+      visitor: response.visitor.map(presentVisitor),
       count: response.count,
     });
   };
@@ -30,7 +31,7 @@ export class VisitorController {
 
     reply.status(201).send({
       message: result.message,
-      visitor: result.visitor,
+      visitor: result.visitor ? presentVisitor(result.visitor) : undefined,
     });
   };
 
@@ -53,7 +54,7 @@ export class VisitorController {
 
     reply.status(200).send({
       message: result.message,
-      visitor: result.visitor,
+      visitor: result.visitor ? presentVisitor(result.visitor) : undefined,
     });
   };
 }

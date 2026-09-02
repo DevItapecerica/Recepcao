@@ -27,13 +27,13 @@ export default (sequelize: Sequelize, dataTypes: typeof DataTypes) => {
     "UserSessionModel",
     {
       id: {
-        type: dataTypes.UUID,
+        type: dataTypes.INTEGER.UNSIGNED,
         autoIncrement: true,
         allowNull: false,
         primaryKey: true,
       },
       userId: {
-        type: dataTypes.INTEGER,
+        type: dataTypes.UUID,
         allowNull: false,
         field: "user_id",
         references: {

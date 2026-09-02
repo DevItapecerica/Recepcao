@@ -28,6 +28,15 @@ export const getVisitsByVisitorId = async (uuid) => {
   return data;
 };
 
+export const getDashboard = async (dateFrom, dateTo, limit = 5) => {
+  const { data } = await API.get("/visits/dashboard", {
+    params: { dateFrom, dateTo, limit },
+    headers: { Authorization: localStorage.getItem("token") },
+  });
+
+  return data;
+};
+
 export const addVisits = async (uuid, newVisit) => {
   const url = `/visits`;
 

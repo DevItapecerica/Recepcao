@@ -4,11 +4,13 @@ import bcrypt from "bcryptjs";
 import { AuthResult } from "../../core/types/authTypes.js";
 import { AppError } from "../../core/types/errorTypes.js";
 import { SECRET_KEY_JWT } from "../../core/config/env.js";
-import { userRepository } from "../../infra/database/sequelize/repositories/sequelize.user.repository.js";
+import { IUserRepository } from "../../domain/repositories/user/user.repository.js";
 
 export class Auth {
-  static async Login(username: string, password: string): Promise<AuthResult> {
-    const user = await userRepository.findUserByUsername(username);
+  constructor(private readonly userRepository: IUserRepository) {}
+
+  async Login(username: string, password: string): Promise<AuthResult> {
+    const user = await this.userRepository.findUserByUsername(username);
 
     if (!user) {
       throw new AppError("Usuário ou senha inválidos", 401, "UNAUTHORIZED");

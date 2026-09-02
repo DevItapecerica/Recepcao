@@ -4,11 +4,12 @@ import {
   VisitorsGenericResponse,
   VisitorsRequired,
   VisitorUpdate,
-} from "../../core/types/visitorTypes.js";
+} from "../dto/visitor/visitorTypes.js";
 import { Visitor } from "../../domain/entities/Visitor.js";
 import { IVisitorRepository } from "../../domain/repositories/visitor/visitor.repository.js";
 import { VisitorPolicyDomainService } from "../../domain/services/visitor/visitorPolicy.domain.service.js";
 import { AppError } from "../../core/types/errorTypes.js";
+import { parsePagination } from "../../core/utils/pagination.js";
 
 export class VisitorsService {
   constructor(
@@ -19,21 +20,12 @@ export class VisitorsService {
   async listVisitors(
     query: VisitorsQueryParams
   ): Promise<GetVisitorssResponse> {
-    const {
-      page = "0",
-      limit = "10",
-      search = "",
-    } = query as {
-      page?: string;
-      limit?: string;
-      search?: string;
-    };
-    const offset = Number(page) * Number(limit);
+    const { search, offset, limit } = parsePagination(query);
 
     const { count, rows } = await this.visitorRepository.list({
       search,
       offset,
-      limit: Number(limit),
+      limit,
     });
 
     if (rows.length === 0) {

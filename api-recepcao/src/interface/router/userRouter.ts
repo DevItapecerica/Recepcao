@@ -1,8 +1,9 @@
 import { FastifyInstance } from "fastify";
-import { authJWT } from "../../core/middleware/authJWT.js";
+import { authJWT } from "../factories/auth/auth.factory.js";
 import { checkPermissions } from "../../core/middleware/checkPermissions.js";
 import { UserController } from "../controller/user/userController.js";
 import { errorSchema } from "../../core/shared/schema/errorSchema.js";
+import { paginationQuerySchema, uuidParamsSchema } from "../../core/shared/schema/querySchemas.js";
 
 const userSchema = {
   type: "object",
@@ -94,6 +95,7 @@ export async function userRouter(app: FastifyInstance) {
       description: "Let you update Users and usage the application",
       summary: "Update New User",
       body: userUpdateSchema,
+      params: uuidParamsSchema,
       response: {
         200: {
           description: "User created successfully",
@@ -123,6 +125,7 @@ export async function userRouter(app: FastifyInstance) {
       tags: ["User"],
       description: "Get all users",
       summary: "Get Users",
+      querystring: paginationQuerySchema,
       response: {
         200: {
           description: "List of users",
@@ -156,6 +159,7 @@ export async function userRouter(app: FastifyInstance) {
       tags: ["User"],
       description: "Let you Delete Users in the application",
       summary: "Delete Users",
+      params: uuidParamsSchema,
       response: {
         200: {
           description: "User Delete successfully",

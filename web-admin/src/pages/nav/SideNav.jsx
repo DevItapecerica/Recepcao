@@ -8,8 +8,14 @@ const SideNav = () => {
 
   const navigation = [
     {
-      name: "Visitors",
+      name: "Dashboard",
       path: "/Admin",
+      icon: "pi-chart-bar",
+      role: ["user", "admin", "superadmin"],
+    },
+    {
+      name: "Visitors",
+      path: "/Admin/Visitors",
       icon: "pi-pen-to-square",
       role: ["user", "admin", "superadmin"],
     },

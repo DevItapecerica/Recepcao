@@ -2,7 +2,7 @@ import { FastifyInstance } from "fastify";
 import { loginController } from "../controller/auth/loginController.js";
 import { ValidateTokenController } from "../controller/auth/validateTokenController.js";
 import { AlterPwdController } from "../controller/auth/alterpwdController.js";
-import { authJWT } from "../../core/middleware/authJWT.js";
+import { authJWT } from "../factories/auth/auth.factory.js";
 import { errorSchema } from "../../core/shared/schema/errorSchema.js";
 
 export async function loginRouter(app: FastifyInstance) {

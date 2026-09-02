@@ -3,13 +3,18 @@ import fp from "fastify-plugin";
 import { AppError } from "../types/errorTypes.js";
 
 const errorHook = (fastify: FastifyInstance) => {
-  return fastify.setErrorHandler((error: AppError, request: FastifyRequest, reply: FastifyReply) => {
-    reply.status(error.statusCode || 500).send({ message: error.message || "Internal Server Error", ok: false });
+  return fastify.setErrorHandler((error: Error, request: FastifyRequest, reply: FastifyReply) => {
+    const expected = error instanceof AppError;
+    const statusCode = expected ? error.statusCode : 500;
+    const message = expected ? error.message : "Internal Server Error";
+    const code = expected ? error.code : "INTERNAL_SERVER_ERROR";
+
+    reply.status(statusCode).send({ message, code, ok: false });
 
     fastify.log.error({
       method: request.method,
       url: request.url,
-      statusCode: error.statusCode || 500,
+      statusCode,
       error,
       requestOptions: request.routeOptions.config.audit
     });

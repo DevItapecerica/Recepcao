@@ -14,6 +14,24 @@ export interface UserRequired {
   cpf: string;
 }
 
+export type UserUpdate = Pick<
+  UserRequired,
+  "first_name" | "last_name" | "role" | "email"
+>;
+
+export interface UserResponse {
+  uuid?: string;
+  first_name: string;
+  last_name: string;
+  username: string;
+  email: string;
+  role: UserRole;
+  firstLogin: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+  deletedAt?: Date | null;
+}
+
 // response to methodes
 export type GetUser = {
   message: string;
