@@ -5,10 +5,10 @@ services:
     image: mariadb:10.11
     container_name: recepcao_db
     environment:
-      MARIADB_USER: ${MYSQL_USER}
-      MARIADB_PASSWORD: ${MYSQL_PASSWORD}
-      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MARIADB_DATABASE: ${MYSQL_DATABASE}
+      MARIADB_USER: ${DATABASE_USER}
+      MARIADB_PASSWORD: ${DATABASE_KEY}
+      MARIADB_ROOT_PASSWORD: ${DATABASE_KEY}
+      MARIADB_DATABASE: ${DATABASE_NAME}
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
@@ -27,16 +27,32 @@ services:
       context: ./api-recepcao
       dockerfile: Dockerfile
     environment:
-      NODE_ENV: ${NODE_ENV}
-      APPLICATION_PORT: ${APPLICATION_PORT}
+      NODE_ENV: 'production'
+      APPLICATION_PORT: 3000
       SECRET_KEY_JWT: ${SECRET_KEY_JWT}
+      
       DATABASE_USER: ${DATABASE_USER}
       DATABASE_KEY: ${DATABASE_KEY}
       DATABASE_NAME: ${DATABASE_NAME}
       DATABASE_HOST: ${DATABASE_HOST}
-      DATABASE_URL: ${DATABASE_URL}
-      SECRET_EMAIL: ${SECRET_EMAIL}
-      SECRET_PASSWORD: ${SECRET_PASSWORD}
+      DATABASE_URL: mariadb://${DATABASE_USER}:${DATABASE_KEY}@${DATABASE_HOST}:3306/${DATABASE_NAME}
+
+      MAIL_ADRESS: ${MAIL_ADRESS}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_SECURE: ${MAIL_SECURE}
+
+      CORS_ORIGIN: ${CORS_ORIGIN}
+
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ADMIN_CPF: ${ADMIN_CPF}
+
+    expose:
+      - 3000
+
     depends_on:
       db:
         condition: service_healthy
@@ -47,9 +63,9 @@ services:
       context: ./web-admin
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: ${VITE_API_URL}
-    ports:
-      - "81:80"
+        VITE_API_URL: 'recepcao_api:3000'
+    expose:
+      - 80
     depends_on:
       - api
     environment:
