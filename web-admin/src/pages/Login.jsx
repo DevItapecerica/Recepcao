@@ -15,7 +15,7 @@ import { useToast } from "@Context/toast/ToastContext";
 export default function Login() {
   const { attImage, attUser } = useProfile();
   const { Login } = useAuth();
-  const Navigate = useNavigate();
+  const navigate = useNavigate();
   const { showToast } = useToast();
   /* ------------------------------------------------------------------ */
   const {
@@ -36,9 +36,9 @@ export default function Login() {
       Login(token);
       attUser(user);
       attImage(null);
-      Navigate("/Admin");
+      navigate("/Admin");
     } catch (error) {
-      showToast("error", "error", error.response?.data.message);
+      showToast("error", "Erro", error.response?.data?.message || error.message);
     }
   };
 

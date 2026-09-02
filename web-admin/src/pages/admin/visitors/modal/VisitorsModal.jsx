@@ -1,8 +1,6 @@
 import { useForm, Controller } from "react-hook-form";
 import { useEffect, useState } from "react";
 
-import { postVisitor, putVisitor } from "@Service/Visitor";
-
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { InputMask } from "primereact/inputmask";
@@ -10,17 +8,16 @@ import { Button } from "primereact/button";
 import { Divider } from "primereact/divider";
 
 import { useToast } from "@Context/toast/ToastContext";
-import { useVisitors } from "@Context/visitors/VisitorsContext";
+import { useSaveVisitor } from "@/hooks/queries/useVisitors";
 
 import UploadFile from "./uploadFile/upload/UploadFile";
 
-const VisitorsModal = ({ visible, onHide }) => {
+const VisitorsModal = ({ visible, onHide, visitorTarget, setVisitorTarget }) => {
   const [CEP, setCEP] = useState("");
   const [photoBase64, setPhotoBase64] = useState(null);
 
   const { showToast } = useToast();
-  const { addVisitors, visitorTarget, setVisitorTarget, updateVisitor } =
-    useVisitors();
+  const saveVisitor = useSaveVisitor();
 
   const {
     register,
@@ -84,22 +81,20 @@ const VisitorsModal = ({ visible, onHide }) => {
           showToast("error", "Erro", "Erro ao buscar CEP: " + err.message);
         });
     }
-  }, [CEP, setValue]);
+  }, [CEP, setValue, showToast]);
 
   useEffect(() => {
     setValue("photo", photoBase64 || "");
-  }, [photoBase64]);
+  }, [photoBase64, setValue]);
 
   const onSubmit = async (data) => {
     try {
       if (visitorTarget) {
-        const { message, visitor } = await putVisitor(data, data.uuid);
-        updateVisitor(visitor);
+        const { message } = await saveVisitor.mutateAsync({ visitor: data, uuid: data.uuid });
         setPhotoBase64(null);
         showToast("success", "Sucesso", message || "Visitante atualizado");
       } else {
-        const { visitor, message } = await postVisitor(data);
-        addVisitors(visitor);
+        const { message } = await saveVisitor.mutateAsync({ visitor: data });
         showToast("success", "Sucesso", message || "Visitante criado");
       }
       handleClose();
@@ -258,6 +253,7 @@ const VisitorsModal = ({ visible, onHide }) => {
             type="submit"
             label="Salvar"
             className="btn-primary w-[50%]"
+            loading={saveVisitor.isPending}
           />
         </div>
       </form>

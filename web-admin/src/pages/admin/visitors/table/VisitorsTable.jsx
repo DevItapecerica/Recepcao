@@ -8,25 +8,17 @@ import { Image } from "primereact/image";
 import { Tag } from "primereact/tag";
 
 import { useToast } from "@Context/toast/ToastContext";
-import { useVisitors } from "@Context/visitors/VisitorsContext";
 
 import TableHeader from "@/components/table/TableHeader";
-import { getVisitor } from "@Service/Visitor";
+import { useVisitorsQuery } from "@/hooks/queries/useVisitors";
 
 // 1. Receba o novo prop "setDetailsIsVisible"
 const VisitorsView = ({
   setEditIsVisible,
   setExcludeIsVisible,
   setDetailsIsVisible,
+  setVisitorTarget,
 }) => {
-  const {
-    visitors,
-    setVisitors,
-    totalVisitor,
-    setTotalVisitor,
-    setVisitorTarget,
-  } = useVisitors();
-
   const { showToast } = useToast();
 
   const [query, setQuery] = useState({
@@ -35,23 +27,13 @@ const VisitorsView = ({
     search: null,
   });
 
-  const fetchData = async () => {
-    try {
-      const { visitor, count } = await getVisitor(
-        query.page,
-        query.limit,
-        query.search
-      );
-      setTotalVisitor(count);
-      setVisitors(visitor);
-    } catch (error) {
-      showToast("error", "Erro", error.response?.data?.message || "Erro geral");
-    }
-  };
+  const { data, isPending, isFetching, error } = useVisitorsQuery(query);
+  const visitors = data?.visitor || [];
+  const totalVisitor = data?.count || 0;
 
   useEffect(() => {
-    fetchData();
-  }, [query]);
+    if (error) showToast("error", "Erro", error.response?.data?.message || error.message);
+  }, [error, showToast]);
 
   const itemTemplate = (data) => {
     const toEdit = () => {
@@ -175,10 +157,12 @@ const VisitorsView = ({
         itemTemplate={itemTemplate}
         layout="list"
         paginator={false}
+        loading={isPending || isFetching}
+        emptyMessage="Nenhum visitante encontrado."
       />
 
       <Paginator
-        first={query.page}
+        first={query.page * query.limit}
         rows={query.limit}
         totalRecords={totalVisitor}
         rowsPerPageOptions={[10, 20, 30]}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { FileUpload } from "primereact/fileupload";
 import { ProgressBar } from "primereact/progressbar";
 import { Tag } from "primereact/tag";
@@ -15,7 +15,7 @@ export default function UploadFile({ setPhotoBase64, photo }) {
     const imageSrc = webcamRef.current.getScreenshot();
     setPhotoBase64(imageSrc);
     setShowWebcam(false);
-  }, [webcamRef]);
+  }, [setPhotoBase64]);
 
   const onTemplateSelect = (e) => {
     let _totalSize = totalSize;

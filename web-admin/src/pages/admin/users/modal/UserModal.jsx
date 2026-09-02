@@ -5,9 +5,8 @@ import { Dropdown } from "primereact/dropdown";
 import { Button } from "primereact/button";
 import { useToast } from "@Context/toast/ToastContext";
 import { useForm, Controller } from "react-hook-form";
-import { useUsers } from "@Context/users/UsersContext";
-import { postUser, updateUser } from "@Service/User";
 import { useEffect } from "react";
+import { useSaveUser } from "@/hooks/queries/useUsers";
 
 const rolesOption = [
   { label: "Admin", value: "admin" },
@@ -15,9 +14,9 @@ const rolesOption = [
   { label: "Superadmin", value: "superadmin" },
 ];
 
-const UserModal = ({ visible, onHide }) => {
+const UserModal = ({ visible, onHide, userTarget, setUserTarget }) => {
   const { showToast } = useToast();
-  const { addUsers, userTarget, setUserTarget, updateUsers } = useUsers();
+  const saveUser = useSaveUser();
 
   const {
     register,
@@ -25,7 +24,6 @@ const UserModal = ({ visible, onHide }) => {
     handleSubmit,
     formState: { errors },
     reset,
-    setValue,
   } = useForm({
     defaultValues: {
       uuid: null,
@@ -66,12 +64,10 @@ const UserModal = ({ visible, onHide }) => {
   const onSubmit = async (data) => {
     try {
       if (userTarget) {
-        const { message, user } = await updateUser(data, data.uuid);
-        updateUsers(user);
+        const { message } = await saveUser.mutateAsync({ user: data, uuid: data.uuid });
         showToast("success", "Sucesso", message || "Atualizado com sucesso");
       } else {
-        const { newUser, message } = await postUser(data);
-        addUsers(newUser);
+        const { message } = await saveUser.mutateAsync({ user: data });
         showToast("success", "Sucesso", message || "Criado com sucesso");
       }
       handleClose();
@@ -187,7 +183,7 @@ const UserModal = ({ visible, onHide }) => {
             onClick={handleClose}
             type="button"
           />
-          <Button label="Salvar" className="btn-primary" type="submit" />
+          <Button label="Salvar" className="btn-primary" type="submit" loading={saveUser.isPending} />
         </div>
       </form>
     </Dialog>

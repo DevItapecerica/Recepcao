@@ -1,6 +1,7 @@
 import { AuthContext } from "./AuthContext";
-import { useEffect, useRef, useState } from "react";
-import { logoutSession, refreshSession } from "../../service/Login";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { logoutSession, refreshSession, validateToken } from "../../service/Login";
+import { useProfile } from "../profile/ProfileContext";
 
 const isExpired = (token) => {
   if (!token) return true;
@@ -14,46 +15,45 @@ const isExpired = (token) => {
   }
 };
 
-const ProfileProvider = ({ children }) => {
+const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(
     localStorage.getItem("token") ? localStorage.getItem("token") : null
   );
-  const [isAuth, setIsAuth] = useState(token ? true : false);
-  const [isInitializing, setIsInitializing] = useState(true);
+  const [status, setStatus] = useState("initializing");
   const [error, setError] = useState(null);
   const initializationStarted = useRef(false);
+  const { attImage, attUser, attEmail } = useProfile();
 
   const attError = (error) => {
     const message =
-      error.response.data.message || error.message || "Unknow Error";
-    const code = error.status || 500;
+      error.response?.data?.message || error.message || "Erro desconhecido";
+    const code = error.response?.status || error.status || 500;
 
     setError({ message: message, code: code });
   };
 
-  const Login = (token) => {
+  const Login = useCallback((token) => {
     localStorage.setItem("token", token);
     setToken(token);
-    setIsAuth(true);
-  };
+    setStatus("authenticated");
+  }, []);
 
-  const clearSession = () => {
+  const clearSession = useCallback(() => {
     localStorage.removeItem("token");
     setToken(null);
-    setIsAuth(false);
-  };
+    setStatus("anonymous");
+    attUser(null);
+    attImage(null);
+    attEmail(null);
+  }, [attEmail, attImage, attUser]);
 
-  const Logout = async () => {
+  const Logout = useCallback(async () => {
     try {
       await logoutSession();
     } finally {
       clearSession();
     }
-  };
-
-  useEffect(() => {
-    setIsAuth(token ? true : false);
-  }, [token]);
+  }, [clearSession]);
 
   useEffect(() => {
     const handleRefreshedToken = ({ detail }) => setToken(detail);
@@ -64,26 +64,39 @@ const ProfileProvider = ({ children }) => {
       window.removeEventListener("auth:token-refreshed", handleRefreshedToken);
       window.removeEventListener("auth:session-expired", handleExpiredSession);
     };
-  }, []);
+  }, [clearSession]);
 
   useEffect(() => {
     if (initializationStarted.current) return;
     initializationStarted.current = true;
 
     const initialize = async () => {
-      if (isExpired(localStorage.getItem("token"))) {
+      let activeToken = localStorage.getItem("token");
+      if (isExpired(activeToken)) {
         try {
-          const refreshedToken = await refreshSession();
-          setToken(refreshedToken);
+          activeToken = await refreshSession();
+          setToken(activeToken);
         } catch {
           clearSession();
+          return;
         }
       }
-      setIsInitializing(false);
+
+      try {
+        const response = await validateToken(activeToken);
+        attUser(response.user);
+        attImage(response.user.image || null);
+        setStatus("authenticated");
+      } catch {
+        clearSession();
+      }
     };
 
     initialize();
-  }, []);
+  }, [attImage, attUser, clearSession]);
+
+  const isAuth = status === "authenticated";
+  const isInitializing = status === "initializing";
 
   return (
     <AuthContext.Provider
@@ -94,4 +107,4 @@ const ProfileProvider = ({ children }) => {
   );
 };
 
-export default ProfileProvider;
+export default AuthProvider;

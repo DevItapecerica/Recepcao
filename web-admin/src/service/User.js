@@ -1,13 +1,11 @@
 import API from "@API/API";
 
-export const getUser = async (page, limit, search) => {
+export const getUser = async (page, limit, search, signal) => {
   const url = search
     ? `/user?page=${page || 0}&limit=${limit || 10}&search=${search}`
     : `/user?page=${page || 0}&limit=${limit || 10}`;
 
-  const { data } = await API.get(url, {
-    headers: { Authorization: localStorage.getItem("token") },
-  });
+  const { data } = await API.get(url, { signal });
 
   return data;
 };
@@ -21,17 +19,13 @@ export const postUser = async (newUser) => {
     cpf: newUser.cpf,
   };
 
-  const { data } = await API.post("/user", payload, {
-    headers: { Authorization: localStorage.getItem("token") },
-  });
+  const { data } = await API.post("/user", payload);
 
   return data;
 };
 
 export const deleteUser = async (uuid) => {
-  const { data } = await API.delete(`/user/${uuid}`, {
-    headers: { Authorization: localStorage.getItem("token") },
-  });
+  const { data } = await API.delete(`/user/${uuid}`);
   return data;
 };
 
@@ -43,8 +37,7 @@ export const updateUser = async (user, uuid) => {
       last_name: user.last_name,
       role: user.role,
       email: user.email,
-    },
-    { headers: { Authorization: localStorage.getItem("token") } }
+    }
   );
 
   return data;

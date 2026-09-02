@@ -1,52 +1,22 @@
-import { Outlet, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { Navigate, Outlet } from "react-router-dom";
 
 import { useAuth } from "../context/auth/AuthContext";
-import { useProfile } from "../context/profile/ProfileContext";
-
 import SideNav from "@/pages/nav/SideNav";
 import ErrorMiddleware from "./ErrorMiddleware";
-import { validateToken } from "../service/Login";
-import { useLoading } from "../context/loading/LoadingContext";
+import Loading from "./Loading";
 
 const ProtectRouter = () => {
-  const { isAuth, token, error, Logout, isInitializing } = useAuth();
-  const { attImage, attUser, user } = useProfile();
-  const { loading, attLoading } = useLoading();
-
-  const Navigate = useNavigate();
-
-  const Validate = async () => {
-    attLoading(true);
-    try {
-      const response = await validateToken();
-      const { name, role, uuid } = response.user;
-      attImage(response.user.image);
-      await attUser({ name, role, uuid });
-    } catch (error) {
-      if (error.response?.status === 401) await Logout();
-    } finally {
-      attLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (isInitializing) return;
-    !isAuth || !token ? Navigate("/") : "";
-    if (isAuth && token) Validate();
-  }, [token, isAuth, isInitializing]);
+  const { isAuth, error, isInitializing } = useAuth();
 
   if (error) {
-    <div className="h-full bg-content m-auto border-b border-gray-200 dark:border-none mb-1 flex md:flex-row flex-col">
-      <SideNav />
-
-      <ErrorMiddleware error={error} />
-    </div>;
+    return <ErrorMiddleware error={error} />;
   }
 
-  if (loading || isInitializing) {
-    return <></>;
+  if (isInitializing) {
+    return <Loading />;
   }
+
+  if (!isAuth) return <Navigate to="/" replace />;
 
   return (
     <div className="h-full bg-content m-auto border-b border-gray-200 dark:border-none mb-1 flex md:flex-row flex-col">
@@ -58,4 +28,4 @@ const ProtectRouter = () => {
   );
 };
 
-export default ProtectRouter; // Exporting the component
+export default ProtectRouter;

@@ -1,13 +1,8 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router";
+import { lazy, Suspense } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import Nav from "./pages/nav/Nav";
 import Login from "./pages/Login";
-
-import Admin from "./pages/Admin";
-import Visitors from "./pages/admin/visitors/Visitors";
-import Users from "./pages/admin/users/Users";
-// import Calendar from "./pages/admin/calendar/Calendar";
-import Config from "./pages/admin/config/Config";
 
 import Footer from "./pages/footer/Footer";
 
@@ -17,17 +12,18 @@ import Loading from "./middleware/Loading";
 
 import { useThemeContext } from "@/context/theme/ThemeContext";
 import Singout from "./pages/Singout";
-import { useLoading } from "./context/loading/LoadingContext";
-import VisitsByDayTable from "./pages/admin/Visits/Visits";
-import { useProfile } from "./context/profile/ProfileContext";
 import Terms from "./pages/terms/Terms";
 import PrivacyPolicy from "./pages/terms/PrivacityPolicy";
-import Dashboard from "./pages/admin/dashboard/Dashboard";
+
+const Admin = lazy(() => import("./pages/Admin"));
+const Dashboard = lazy(() => import("./pages/admin/dashboard/Dashboard"));
+const Visitors = lazy(() => import("./pages/admin/visitors/Visitors"));
+const Users = lazy(() => import("./pages/admin/users/Users"));
+const VisitsByDayTable = lazy(() => import("./pages/admin/Visits/Visits"));
+const Config = lazy(() => import("./pages/admin/config/Config"));
 
 function App() {
   const { theme } = useThemeContext();
-  const { loading } = useLoading;
-  const { user } = useProfile();
   return (
     <div
       id="App"
@@ -36,22 +32,21 @@ function App() {
     >
       <div id="Main" className="h-full overflow-scroll">
         <Router>
-          {loading && <Loading></Loading>}
           <Nav />
+          <Suspense fallback={<Loading />}>
           <Routes>
             <Route index element={<Login></Login>}></Route>
 
             <Route path="/" element={<ProtectRouter />}>
-              <Route path="/Admin" element={<Admin />}>
+              <Route path="Admin" element={<Admin />}>
                 <Route index element={<Dashboard />} />
-                <Route path="/Admin/Visitors" element={<Visitors />} />
-                <Route path="/Admin/Users" element={<Users />} />
-                {/* <Route path="/Admin/Calendar" element={<Calendar />} /> */}
-                <Route path="/Admin/Visits" element={<VisitsByDayTable />} />
-                <Route path="/Admin/Configurations" element={<Config />} />
+                <Route path="Visitors" element={<Visitors />} />
+                <Route path="Users" element={<Users />} />
+                <Route path="Visits" element={<VisitsByDayTable />} />
+                <Route path="Configurations" element={<Config />} />
               </Route>
 
-              <Route path="/Singout" element={<Singout />} />
+              <Route path="Singout" element={<Singout />} />
             </Route>
             <Route path="/Terms" element={<Terms />}></Route>
             <Route path="/Privacity" element={<PrivacyPolicy />}></Route>
@@ -65,6 +60,7 @@ function App() {
               }
             ></Route>
           </Routes>
+          </Suspense>
         </Router>
         <Footer />
       </div>

@@ -1,13 +1,11 @@
 import API from "@API/API";
 
-export const getVisitor = async (page, limit, search) => {
+export const getVisitor = async (page, limit, search, signal) => {
   const url = search
     ? `/visitors?page=${page || 0}&limit=${limit || 10}&search=${search}`
     : `/visitors?page=${page || 0}&limit=${limit || 10}`;
 
-  const { data } = await API.get(url, {
-    headers: { Authorization: localStorage.getItem("token") },
-  });
+  const { data } = await API.get(url, { signal });
 
   return data;
 };
@@ -25,9 +23,7 @@ export const postVisitor = async (visitor) => {
     zipCode: visitor.zipCode || null,
   };
 
-  const { data } = await API.post("/visitors", payload, {
-    headers: { Authorization: localStorage.getItem("token") },
-  });
+  const { data } = await API.post("/visitors", payload);
 
   return data;
 };
@@ -44,16 +40,12 @@ export const putVisitor = async (visitor, uuid) => {
     zipCode: visitor.zipCode || null,
   };
 
-  const { data } = await API.put(`/visitors/${uuid}`, payload, {
-    headers: { Authorization: localStorage.getItem("token") },
-  });
+  const { data } = await API.put(`/visitors/${uuid}`, payload);
 
   return data;
 };
 
 export const deleteVisitor = async (uuid) => {
-  const { data } = await API.delete(`/visitors/${uuid}`, {
-    headers: { Authorization: localStorage.getItem("token") },
-  });
+  const { data } = await API.delete(`/visitors/${uuid}`);
   return data;
 };

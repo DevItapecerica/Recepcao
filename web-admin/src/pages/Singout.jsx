@@ -1,27 +1,19 @@
 import { useEffect } from "react";
 import { useAuth } from "../context/auth/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { useProfile } from "../context/profile/ProfileContext";
 
 const Singout = () => {
   const { Logout } = useAuth();
-  const { attImage, attUser, attEmail } = useProfile();
-  const Navigate = useNavigate();
+  const navigate = useNavigate();
   useEffect(() => {
     const signOut = async () => {
-      try {
-        await Logout();
-      } finally {
-        attUser(null);
-        attImage(null);
-        attEmail(null);
-        Navigate("/");
-      }
+      await Logout();
+      navigate("/", { replace: true });
     };
     signOut();
-  }, []);
+  }, [Logout, navigate]);
 
-  return;
+  return null;
 };
 
 export default Singout;

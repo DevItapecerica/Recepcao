@@ -8,8 +8,7 @@ import { Button } from "primereact/button";
 
 import { useEffect, useState } from "react";
 import { useToast } from "@Context/toast/ToastContext";
-import { useUsers } from "@Context/users/UsersContext";
-import { getUser } from "@Service/User";
+import { useUsersQuery } from "@/hooks/queries/useUsers";
 
 const columns = [
   { field: "first_name", header: "First Name" },
@@ -19,10 +18,7 @@ const columns = [
   { field: "role", header: "Role" },
 ];
 
-const UserTable = ({ setEditIsVisible, setExcludeIsVisible }) => {
-  const { users, setUsers, totalUsers, setTotalUsers, setUserTarget } =
-    useUsers();
-
+const UserTable = ({ setEditIsVisible, setExcludeIsVisible, setUserTarget }) => {
   const { showToast } = useToast();
   const [query, setQuery] = useState({
     page: 0,
@@ -30,23 +26,13 @@ const UserTable = ({ setEditIsVisible, setExcludeIsVisible }) => {
     search: null,
   });
 
-  const fetchData = async () => {
-    try {
-      const { user, count } = await getUser(
-        query.page,
-        query.limit,
-        query.search
-      );
-      setTotalUsers(count);
-      setUsers(user);
-    } catch (error) {
-      showToast("error", "error", error.response.data.message);
-    }
-  };
+  const { data, isPending, isFetching, error } = useUsersQuery(query);
+  const users = data?.user || [];
+  const totalUsers = data?.count || 0;
 
   useEffect(() => {
-    fetchData();
-  }, [query]);
+    if (error) showToast("error", "Erro", error.response?.data?.message || error.message);
+  }, [error, showToast]);
 
   const ActionsFields = (data) => {
     const toEdit = () => {
@@ -117,14 +103,14 @@ const UserTable = ({ setEditIsVisible, setExcludeIsVisible }) => {
           </div>
         }
       ></TableHeader>
-      <DataTable value={users} size="medium" stripedRows>
+      <DataTable value={users} size="medium" stripedRows loading={isPending || isFetching} emptyMessage="Nenhum usuário encontrado.">
         {columns.map((col, index) => (
           <Column key={index} field={col.field} header={col.header} />
         ))}
         <Column header="Actions" body={(rowData) => ActionsFields(rowData)} />
       </DataTable>
       <Paginator
-        first={query.page}
+        first={query.page * query.limit}
         rows={query.limit}
         totalRecords={totalUsers}
         rowsPerPageOptions={[1, 10, 20, 30]}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { DataTable } from "primereact/datatable";
 import TableHeader from "../../../components/table/TableHeader";
 
@@ -7,9 +7,10 @@ import { Avatar } from "primereact/avatar";
 import { format } from "date-fns";
 import { InputText } from "primereact/inputtext";
 import { Calendar } from "primereact/calendar";
-import { getVisits } from "../../../service/Visits";
 import { Paginator } from "primereact/paginator";
 import { Button } from "primereact/button";
+import { useVisitsQuery } from "@/hooks/queries/useVisits";
+import { useToast } from "@Context/toast/ToastContext";
 
 export default function VisitsTable() {
   const calendarRef = useRef(null);
@@ -18,17 +19,12 @@ export default function VisitsTable() {
     limit: 10,
     search: null,
   });
-  const [data, setData] = useState([]);
-  const [dateFilter, setDateFilter] = useState(null);
-
-  const fetchData = async () => {
-    const response = await getVisits(query.page, query.limit, query.search);
-    setData(response);
-  };
+  const { showToast } = useToast();
+  const { data, isPending, isFetching, error } = useVisitsQuery(query);
 
   useEffect(() => {
-    fetchData();
-  }, [query]);
+    if (error) showToast("error", "Erro", error.response?.data?.message || error.message);
+  }, [error, showToast]);
 
   return (
     <section>
@@ -71,7 +67,7 @@ export default function VisitsTable() {
       />
 
       <div className="shadow-sm p-4 rounded-2xl flex flex-col gap-">
-        <DataTable value={data.visits} className="text-sm">
+        <DataTable value={data?.visits || []} className="text-sm" loading={isPending || isFetching} emptyMessage="Nenhuma visita encontrada.">
           <Column
             header="Visitante"
             body={(rowData) => (
@@ -118,9 +114,9 @@ export default function VisitsTable() {
           />
         </DataTable>
         <Paginator
-          first={query.page}
+          first={query.page * query.limit}
           rows={query.limit}
-          totalRecords={data.count}
+          totalRecords={data?.count || 0}
           rowsPerPageOptions={[1, 10, 20, 30]}
           onPageChange={(e) =>
             setQuery((prev) => ({

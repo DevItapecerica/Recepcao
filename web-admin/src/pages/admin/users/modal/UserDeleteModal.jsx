@@ -1,21 +1,16 @@
 import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
-import { deleteUser } from "@Service/User";
-
-import { useUsers } from "@Context/users/UsersContext";
 import { useToast } from "@Context/toast/ToastContext";
+import { useDeleteUser } from "@/hooks/queries/useUsers";
 
-const UserDeleteModal = ({ visible, onHide }) => {
+const UserDeleteModal = ({ visible, onHide, userTarget, setUserTarget }) => {
   const { showToast } = useToast();
-  // Context to manage user data
-  const { userTarget, setUserTarget, removeUsers } = useUsers();
+  const deleteMutation = useDeleteUser();
 
   // Submissão do formulário
   const onConfirm = async () => {
     try {
-      const { message } = await deleteUser(userTarget.uuid);
-      // Remove user from context
-      removeUsers(userTarget.uuid);
+      const { message } = await deleteMutation.mutateAsync(userTarget.uuid);
       showToast("success", "Sucesso", message || "Deleted successfully");
 
       handleClose();
@@ -64,6 +59,7 @@ const UserDeleteModal = ({ visible, onHide }) => {
           icon="pi pi-trash"
           className="p-button-danger"
           onClick={onConfirm}
+          loading={deleteMutation.isPending}
         />
       </div>
     </Dialog>

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Avatar } from "primereact/avatar";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { useToast } from "@Context/toast/ToastContext";
-import { getDashboard } from "@Service/Visits";
+import { useDashboardQuery } from "@/hooks/queries/useVisits";
 
 const currentMonth = () => {
   const now = new Date();
@@ -72,36 +72,15 @@ const BarChart = ({ title, data, minWidth = "0" }) => {
 
 export default function Dashboard() {
   const [month, setMonth] = useState(currentMonth);
-  const [dashboard, setDashboard] = useState(emptyDashboard);
-  const [loading, setLoading] = useState(true);
   const { showToast } = useToast();
+  const period = monthRange(month);
+  const { data, isPending, isFetching, error } = useDashboardQuery({ ...period, limit: 5 });
+  const dashboard = data?.dashboard || emptyDashboard;
+  const loading = isPending || isFetching;
 
   useEffect(() => {
-    let active = true;
-
-    const loadDashboard = async () => {
-      setLoading(true);
-      try {
-        const period = monthRange(month);
-        const response = await getDashboard(period.dateFrom, period.dateTo, 5);
-        if (active) setDashboard(response.dashboard);
-      } catch (error) {
-        if (active) {
-          setDashboard(emptyDashboard);
-          showToast(
-            "error",
-            "Erro",
-            error.response?.data?.message || error.message,
-          );
-        }
-      } finally {
-        if (active) setLoading(false);
-      }
-    };
-
-    loadDashboard();
-    return () => { active = false; };
-  }, [month]);
+    if (error) showToast("error", "Erro", error.response?.data?.message || error.message);
+  }, [error, showToast]);
 
   const topVisitor = dashboard.mostFrequentVisitor;
 
