@@ -9,12 +9,12 @@ const userSchema = {
   type: "object",
   required: ["first_name", "last_name", "role", "email", "cpf"],
   properties: {
-    first_name: { type: "string" },
-    last_name: { type: "string" },
-    role: { type: "string" },
-    email: { type: "string", format: "email" },
+    first_name: { type: "string", minLength: 2, maxLength: 100 },
+    last_name: { type: "string", minLength: 2, maxLength: 100 },
+    role: { type: "string", enum: ["user", "recepcionist", "admin", "superadmin"] },
+    email: { type: "string", format: "email", maxLength: 254 },
     password: { type: "string" },
-    cpf: { type: "string" },
+    cpf: { type: "string", minLength: 11, maxLength: 14 },
   },
   additionalProperties: false,
 };
@@ -23,10 +23,10 @@ const userUpdateSchema = {
   type: "object",
   required: ["first_name", "last_name", "role", "email"],
   properties: {
-    first_name: { type: "string" },
-    last_name: { type: "string" },
-    role: { type: "string" },
-    email: { type: "string", format: "email" },
+    first_name: { type: "string", minLength: 2, maxLength: 100 },
+    last_name: { type: "string", minLength: 2, maxLength: 100 },
+    role: { type: "string", enum: ["user", "recepcionist", "admin", "superadmin"] },
+    email: { type: "string", format: "email", maxLength: 254 },
   },
   additionalProperties: false,
 };
@@ -40,14 +40,27 @@ const responseUserSchema = {
     role: { type: "string" },
     email: { type: "string" },
     username: { type: "string" },
+    firstLogin: { type: "boolean" },
   },
 };
 
 export async function userRouter(app: FastifyInstance) {
+  app.addHook("onRoute", (route) => { route.config = { ...route.config, permission: { resource: "users" } }; });
   app.addHook("preHandler", authJWT);
   app.addHook("preHandler", checkPermissions);
 
   const userController = new UserController();
+
+  app.route({
+    method: "POST",
+    url: "/:uuid/activation",
+    config: { permission: { resource: "users" }, rateLimit: { max: 5, timeWindow: "1 minute" } },
+    schema: {
+      tags: ["User"], summary: "Reenviar link de ativação", params: uuidParamsSchema,
+      response: { 200: { type: "object", properties: { message: { type: "string" }, activationSent: { type: "boolean" } } }, ...errorSchema },
+    },
+    handler: userController.resendActivationController,
+  });
 
   app.route({
     method: "POST",
@@ -72,6 +85,7 @@ export async function userRouter(app: FastifyInstance) {
           properties: {
             message: { type: "string" },
             newUser: responseUserSchema,
+            activationSent: { type: "boolean" },
           },
         },
         ...errorSchema,

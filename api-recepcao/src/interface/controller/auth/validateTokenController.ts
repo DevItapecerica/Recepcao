@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { decodeToken } from "../../../core/utils/DecodeToken.js";
 import { AppError } from "../../../core/types/errorTypes.js";
+import { authService } from "../../factories/auth/auth.factory.js";
 
 interface ValidateRequestBody {
   token: string | undefined;
@@ -17,18 +17,12 @@ export const ValidateTokenController = async (
     throw new AppError("Token not provider", 401, "UNAUTHORIZED");
   }
 
-  const tokenResult = await decodeToken(formatedToken);
-
-  if (!tokenResult.ok) {
-    const error: any = new Error(tokenResult.message);
-    error.statusCode = tokenResult.code || 401;
-    throw error;
-  }
+  const tokenResult = await authService.verifyAccessToken(formatedToken);
 
   reply
     .status(200)
     .send({
-      message: tokenResult.message,
+      message: "Token is valid",
       user: {
         name: tokenResult.name,
         uuid: tokenResult.uuid,

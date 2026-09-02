@@ -12,6 +12,8 @@ import { useDebounce } from "@/hooks/useDebounce";
 import RowActions from "@/components/table/RowActions";
 import { confirmDialog } from "primereact/confirmdialog";
 import { useDeleteUser } from "@/hooks/queries/useUsers";
+import { useResendUserActivation } from "@/hooks/queries/useUsers";
+import { useProfile } from "@Context/profile/ProfileContext";
 
 const columns = [
   { field: "first_name", header: "First Name" },
@@ -34,6 +36,8 @@ const UserTable = ({ setEditIsVisible, setUserTarget }) => {
   const users = data?.user || [];
   const totalUsers = data?.count || 0;
   const deleteUser = useDeleteUser();
+  const resendActivation = useResendUserActivation();
+  const { user: currentUser } = useProfile();
 
   useEffect(() => {
     if (error) showToast("error", "Erro", error.response?.data?.message || error.message);
@@ -46,7 +50,13 @@ const UserTable = ({ setEditIsVisible, setUserTarget }) => {
     };
 
     const remove = () => confirmDialog({ message: `Excluir ${data.first_name} ${data.last_name}?`, header: "Confirmar exclusão", icon: "pi pi-exclamation-triangle", acceptLabel: "Excluir", rejectLabel: "Cancelar", acceptClassName: "p-button-danger", accept: () => deleteUser.mutateAsync(data.uuid) });
-    return <RowActions label={`Ações de ${data.first_name}`} items={[{ label: "Editar", icon: "pi pi-pencil", command: toEdit }, { label: "Excluir", icon: "pi pi-trash", command: remove }]} />;
+    const canManage = currentUser?.role === "superadmin" || !["admin", "superadmin"].includes(data.role);
+    const items = canManage ? [
+      { label: "Editar", icon: "pi pi-pencil", command: toEdit },
+      ...(data.firstLogin ? [{ label: "Reenviar ativação", icon: "pi pi-envelope", command: async () => { try { const result = await resendActivation.mutateAsync(data.uuid); showToast(result.activationSent ? "success" : "warn", "Ativação", result.message); } catch (error) { showToast("error", "Erro", error.response?.data?.message || error.message); } } }] : []),
+      ...(currentUser?.role === "superadmin" ? [{ label: "Excluir", icon: "pi pi-trash", command: remove }] : []),
+    ] : [];
+    return items.length ? <RowActions label={`Ações de ${data.first_name}`} items={items} /> : null;
   };
 
   return (

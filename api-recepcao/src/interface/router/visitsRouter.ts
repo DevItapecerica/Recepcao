@@ -15,7 +15,7 @@ const visitsParams = {
       //   example: "123e4567-e89b-12d3-a456-426614174000",
     },
     subject: {
-      type: "string",
+      type: "string", minLength: 2, maxLength: 500,
       //  example: "Reunião com assessor"
     },
     date: {
@@ -112,6 +112,7 @@ const dashboardVisitor = {
 };
 
 export async function visitsRouter(app: FastifyInstance) {
+  app.addHook("onRoute", (route) => { route.config = { ...route.config, permission: { resource: "visits" } }; });
   app.addHook("preHandler", authJWT);
   app.addHook("preHandler", checkPermissions);
   const visitController = new VisitController();

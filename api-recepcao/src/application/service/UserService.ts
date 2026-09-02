@@ -8,14 +8,16 @@ import {
   UserRequired,
   UserUpdate,
 } from "../dto/user/userTypes.js";
-import { generateStrongPassword } from "../../core/utils/passwordGenerator.js";
-import { sendMail } from "../../core/utils/sendMail.js";
 
 import { AppError } from "../../core/types/errorTypes.js";
 import { UserPolicyDomainService } from "../../domain/services/user/userPolicy.domain.service.js";
 import { IUserRepository } from "../../domain/repositories/user/user.repository.js";
 import { User } from "../../domain/entities/User.js";
 import { parsePagination } from "../../core/utils/pagination.js";
+import { randomBytes } from "node:crypto";
+import { ActivationService } from "./ActivationService.js";
+import { IUserSessionRepository } from "../../domain/repositories/auth/user-session.repository.js";
+import { assertStrongPassword } from "../../core/utils/passwordPolicy.js";
 
 // Função utilitária para validar role
 
@@ -23,6 +25,8 @@ export class UserService {
   constructor(
     private readonly userRepository: IUserRepository,
     private readonly userPolicy: UserPolicyDomainService,
+    private readonly activationService?: ActivationService,
+    private readonly sessions?: IUserSessionRepository,
   ) {}
 
   async findUserByUsername(username: string): Promise<GetOneUser> {
@@ -40,7 +44,7 @@ export class UserService {
     return { user, message: "User Retrieved Successfully" };
   }
 
-  async CreateUser(data: UserRequired): Promise<UserGenericResponse> {
+  async CreateUser(data: UserRequired, actorRole?: string): Promise<UserGenericResponse> {
     // Validações
     if (!this.userPolicy.isValidRole(data.role)) {
       throw new AppError(
@@ -49,10 +53,13 @@ export class UserService {
       );
     }
 
+    if (actorRole === "admin" && !["user", "recepcionist"].includes(data.role)) {
+      throw new AppError("Administrador não pode atribuir este papel", 403, "ROLE_ESCALATION");
+    }
+
     const username = `${data.first_name}.${data.last_name}`.toLowerCase();
 
-    let password = generateStrongPassword();
-    const hashPassword = await bcrypt.hash(password, 10);
+    const hashPassword = await bcrypt.hash(randomBytes(48).toString("base64url"), 12);
 
     const user = new User({ ...data, username, password: hashPassword });
 
@@ -68,21 +75,21 @@ export class UserService {
     // Cria usuário
     const newUser = await this.userRepository.createNewUser(user);
 
-    await sendMail(
-      user.email,
-      "Reception Password",
-      `Your password is: ${password}`,
-    );
+    const activationSent = newUser.uuid && this.activationService
+      ? await this.activationService.issue(newUser.uuid)
+      : false;
 
     return {
       message: "Usuário criado com sucesso.",
       user: newUser,
+      activationSent,
     };
   }
 
   async alterUser(
     id: string,
     data: UserUpdate,
+    actorRole?: string,
   ): Promise<UserGenericResponse> {
     const user = await this.userRepository.findUserById(id);
 
@@ -95,6 +102,12 @@ export class UserService {
         "the field 'role' must be 'admin', 'user', 'recepcionist' or 'superadmin'",
         400,
       );
+    }
+    if (actorRole === "admin" && !["user", "recepcionist"].includes(data.role)) {
+      throw new AppError("Administrador não pode atribuir este papel", 403, "ROLE_ESCALATION");
+    }
+    if (actorRole === "admin" && ["admin", "superadmin"].includes(user.role)) {
+      throw new AppError("Administrador não pode gerenciar este usuário", 403, "ROLE_ESCALATION");
     }
 
     if (await this.userPolicy.isDuplicateUser(data.email, null, id)) {
@@ -132,11 +145,28 @@ export class UserService {
     };
   }
 
-  async deleteUser(uuid: string): Promise<UserGenericResponse> {
+  async resendActivation(uuid: string, actorRole: string): Promise<{ message: string; activationSent: boolean }> {
+    const user = await this.userRepository.findUserById(uuid);
+    if (!user) throw new AppError("Usuário não encontrado", 404, "NOT_FOUND");
+    if (!user.firstLogin) throw new AppError("Usuário já está ativo", 409, "USER_ALREADY_ACTIVE");
+    if (actorRole === "admin" && !["user", "recepcionist"].includes(user.role)) {
+      throw new AppError("Administrador não pode gerenciar este papel", 403, "ROLE_ESCALATION");
+    }
+    if (!this.activationService) throw new AppError("Ativação indisponível", 500, "ACTIVATION_UNAVAILABLE");
+    const activationSent = await this.activationService.issue(uuid);
+    return { message: activationSent ? "Link de ativação enviado" : "Link gerado, mas o e-mail não pôde ser enviado", activationSent };
+  }
+
+  async deleteUser(uuid: string, actorUuid?: string): Promise<UserGenericResponse> {
     const user = await this.userRepository.findUserById(uuid);
 
     if (!user) {
       throw new AppError("User not found", 404, "NOT_FOUND");
+    }
+
+    if (uuid === actorUuid) throw new AppError("Você não pode excluir o próprio usuário", 409, "SELF_DELETE");
+    if (user.role === "superadmin" && await this.userRepository.countByRole("superadmin") <= 1) {
+      throw new AppError("O último superadministrador não pode ser excluído", 409, "LAST_SUPERADMIN");
     }
 
     await this.userRepository.deleteUser(uuid);
@@ -152,6 +182,7 @@ export class UserService {
     oldPassword: string,
     newPassword: string,
   ): Promise<GenericResponse> {
+    assertStrongPassword(newPassword);
     const user = await this.userRepository.findUserById(uuid);
 
     if (!user) {
@@ -169,6 +200,7 @@ export class UserService {
     user.changePassword(hashPassword);
 
     await this.userRepository.updateUser(user);
+    if (this.sessions) await this.sessions.revokeAllForUser(uuid);
 
     return {
       message: "Password succefull altered",

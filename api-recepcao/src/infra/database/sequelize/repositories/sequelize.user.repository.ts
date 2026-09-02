@@ -75,6 +75,10 @@ export class SequelizeUserRepository implements IUserRepository {
   async deleteUser(uuid: string): Promise<void> {
     await this.model.destroy({ where: { uuid } });
   }
+
+  async countByRole(role: string): Promise<number> {
+    return this.model.count({ where: { role } });
+  }
 }
 
 export const userRepository = new SequelizeUserRepository();

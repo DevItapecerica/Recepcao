@@ -6,15 +6,20 @@ const SERVICE_API = axios.create({
 });
 
 let refreshPromise = null;
+let accessToken = null;
+
+export const setAccessToken = (token) => {
+  accessToken = token || null;
+};
 
 const updateAccessToken = (token) => {
-  localStorage.setItem("token", token);
+  setAccessToken(token);
   window.dispatchEvent(new CustomEvent("auth:token-refreshed", { detail: token }));
   return token;
 };
 
 const expireSession = () => {
-  localStorage.removeItem("token");
+  setAccessToken(null);
   window.dispatchEvent(new Event("auth:session-expired"));
 };
 
@@ -35,8 +40,7 @@ export const refreshAccessToken = () => {
 };
 
 SERVICE_API.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) config.headers.Authorization = token;
+  if (accessToken) config.headers.Authorization = accessToken;
   return config;
 });
 

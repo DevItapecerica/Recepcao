@@ -6,9 +6,9 @@ import { useAuth } from "@/context/auth/AuthContext";
 import { useProfile } from "@/context/profile/ProfileContext";
 
 const adminItems = [
-  ["Dashboard", "/Admin", ["user", "admin", "superadmin"]], ["Visitantes", "/Admin/Visitors", ["user", "admin", "superadmin"]],
-  ["Usuários", "/Admin/Users", ["admin", "superadmin"]], ["Visitas", "/Admin/Visits", ["user", "admin", "superadmin"]],
-  ["Configurações", "/Admin/Configurations", ["user", "admin", "superadmin"]],
+  ["Dashboard", "/Admin", ["user", "recepcionist", "admin", "superadmin"]], ["Visitantes", "/Admin/Visitors", ["user", "recepcionist", "admin", "superadmin"]],
+  ["Usuários", "/Admin/Users", ["admin", "superadmin"]], ["Visitas", "/Admin/Visits", ["user", "recepcionist", "admin", "superadmin"]],
+  ["Configurações", "/Admin/Configurations", ["user", "recepcionist", "admin", "superadmin"]],
 ];
 const linkClass = ({ isActive }) => `block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${isActive ? "bg-surface-muted text-primary" : "text-muted hover:bg-surface-muted hover:text-font-primary"}`;
 

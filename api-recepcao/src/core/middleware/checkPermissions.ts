@@ -1,32 +1,18 @@
 // middlewares/checkPermissions.ts
-import { FastifyRequest, FastifyReply } from "fastify";
-import { validatePermission } from "../utils/validatePermission.js";
+import { FastifyRequest } from "fastify";
+import { AppError } from "../types/errorTypes.js";
+
+const permissions = {
+  users: { user: [], recepcionist: [], admin: ["GET", "POST", "PUT"], superadmin: ["GET", "POST", "PUT", "DELETE"] },
+  visitors: { user: ["GET", "POST", "PUT"], recepcionist: ["GET", "POST", "PUT"], admin: ["GET", "POST", "PUT"], superadmin: ["GET", "POST", "PUT", "DELETE"] },
+  visits: { user: ["GET", "POST"], recepcionist: ["GET", "POST"], admin: ["GET", "POST"], superadmin: ["GET", "POST", "PUT", "DELETE"] },
+} as const;
 
 export async function checkPermissions(
   request: FastifyRequest,
-  reply: FastifyReply
-) {
-  const method = request.method;
-  const routePath = request.url; // Ex: "/api/user/:uuid"
-
-  const module = routePath.split("/")[3].split("?")[0] as
-    | "user"
-    | "visitors"
-    | "visits";
-
-  const role = request.user?.role as "user" | "admin" | "superadmin"; // JWT deve ter injetado isso antes
-  if (!role || !module) {
-    return reply.code(403).send({ ok: false, message: "Permissão negada" });
-  }
-
-  const validation = validatePermission(
-    request.body as object,
-    role,
-    method,
-    module
-  );
-
-  if (!validation.ok) {
-    return reply.code(403).send({ ok: false, message: validation.message });
-  }
+): Promise<void> {
+  const resource = request.routeOptions.config.permission?.resource;
+  const role = request.user?.role as "user" | "recepcionist" | "admin" | "superadmin";
+  const allowed = resource && role ? permissions[resource][role] as readonly string[] : [];
+  if (!allowed.includes(request.method)) throw new AppError("Permissão negada", 403, "FORBIDDEN");
 }

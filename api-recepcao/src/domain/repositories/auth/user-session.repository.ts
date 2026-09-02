@@ -20,4 +20,5 @@ export interface IUserSessionRepository {
     expiresAt: Date,
   ): Promise<boolean>;
   revokeByRefreshTokenHash(refreshTokenHash: string): Promise<void>;
+  revokeAllForUser(userId: string): Promise<void>;
 }

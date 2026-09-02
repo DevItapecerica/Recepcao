@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
@@ -9,19 +10,30 @@ import { useToast } from "@Context/toast/ToastContext";
 
 import { Divider } from "primereact/divider";
 import { alterPassword } from "../../../service/Login";
+import { useAuth } from "@Context/auth/AuthContext";
+import { useNavigate } from "react-router-dom";
+
+const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{10,128}$/;
 
 const Config = () => {
   const { showToast } = useToast();
   const { user } = useProfile();
+  const { Logout } = useAuth();
+  const navigate = useNavigate();
 
-  const { register, control, handleSubmit, reset, watch, formState: { isSubmitting } } = useForm({
+  const username = user?.username || user?.name || "";
+  const { register, control, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm({
     defaultValues: {
-      username: user?.name || "",
+      username: "",
       old_password: "",
       new_password: "",
       confirm_password: "",
     },
   });
+
+  useEffect(() => {
+    reset({ username, old_password: "", new_password: "", confirm_password: "" });
+  }, [reset, username]);
 
   // Submissão do formulário
   const onSubmit = async (data) => {
@@ -32,7 +44,9 @@ const Config = () => {
         "Sucesso",
         response.message || "Senha alterada com sucesso"
       );
-      reset({ username: user?.name || "", old_password: "", new_password: "", confirm_password: "" });
+      reset({ username, old_password: "", new_password: "", confirm_password: "" });
+      await Logout().catch(() => undefined);
+      navigate("/", { replace: true });
     } catch (error) {
       showToast(
         "error",
@@ -77,16 +91,18 @@ const Config = () => {
                 render={({ field }) => (
                   <Password
                     inputId="old_password"
-                    value={field.value}
+                    {...field}
                     onChange={(e) => field.onChange(e.target.value)}
                     feedback={false}
                     toggleMask
                     className="w-full"
-                    inputClassName="w-full"
+                    inputClassName={`w-full ${errors.old_password ? "p-invalid" : ""}`}
+                    autoComplete="current-password"
                   />
                 )}
               />
             </div>
+            {errors.old_password && <small className="mt-1 text-red-600">{errors.old_password.message}</small>}
           </div>
           <div className="flex flex-col">
             <label htmlFor="new_password" className="mb-1 font-medium">Nova senha</label>
@@ -94,20 +110,22 @@ const Config = () => {
               <Controller
                 name="new_password"
                 control={control}
-                rules={{ required: "Informe a nova senha", minLength: { value: 6, message: "Use pelo menos 6 caracteres" } }}
+                rules={{ required: "Informe a nova senha", validate: (value) => strongPassword.test(value) || "Use 10 caracteres com maiúscula, minúscula, número e símbolo" }}
                 render={({ field }) => (
                   <Password
                     inputId="new_password"
-                    value={field.value}
+                    {...field}
                     onChange={(e) => field.onChange(e.target.value)}
                     feedback={true}
                     toggleMask
                     className="w-full"
-                    inputClassName="w-full"
+                    inputClassName={`w-full ${errors.new_password ? "p-invalid" : ""}`}
+                    autoComplete="new-password"
                   />
                 )}
               />
             </div>
+            {errors.new_password && <small className="mt-1 text-red-600">{errors.new_password.message}</small>}
           </div>
           <div className="flex flex-col">
             <label htmlFor="confirm_password" className="mb-1 font-medium">Confirmar nova senha</label>
@@ -119,16 +137,18 @@ const Config = () => {
                 render={({ field }) => (
                   <Password
                     inputId="confirm_password"
-                    value={field.value}
+                    {...field}
                     onChange={(e) => field.onChange(e.target.value)}
                     feedback={false}
                     toggleMask
                     className="w-full"
-                    inputClassName="w-full"
+                    inputClassName={`w-full ${errors.confirm_password ? "p-invalid" : ""}`}
+                    autoComplete="new-password"
                   />
                 )}
               />
             </div>
+            {errors.confirm_password && <small className="mt-1 text-red-600">{errors.confirm_password.message}</small>}
           </div>
           <div className="flex justify-end gap-2 mt-4">
             <Button

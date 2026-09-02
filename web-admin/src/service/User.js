@@ -42,3 +42,8 @@ export const updateUser = async (user, uuid) => {
 
   return data;
 };
+
+export const resendUserActivation = async (uuid) => {
+  const { data } = await API.post(`/user/${uuid}/activation`);
+  return data;
+};

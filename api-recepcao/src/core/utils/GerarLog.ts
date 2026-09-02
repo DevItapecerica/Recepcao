@@ -32,8 +32,7 @@ export class Log {
         method: request.method,
         url: request.url,
         ip: request.ip,
-        headers: request.headers,
-        body: request.body,
+        userUuid: request.user?.uuid,
       },
     };
 
@@ -49,8 +48,7 @@ export class Log {
         method: request.method,
         url: request.url,
         ip: request.ip,
-        headers: request.headers,
-        body: request.body,
+        userUuid: request.user?.uuid,
       },
     };
 

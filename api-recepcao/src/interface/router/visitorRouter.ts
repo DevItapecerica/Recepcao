@@ -10,15 +10,15 @@ const visitorParams = {
   type: "object",
   required: ["name", "cpf"],
   properties: {
-    name: { type: "string" },
-    cpf: { type: "string" },
-    photo: { type: "string", nullable: true },
-    email: { type: "string", nullable: true },
-    phone: { type: "string", nullable: true },
-    address: { type: "string", nullable: true },
-    city: { type: "string", nullable: true },
-    state: { type: "string", nullable: true },
-    zipCode: { type: "string", nullable: true },
+    name: { type: "string", minLength: 2, maxLength: 150 },
+    cpf: { type: "string", minLength: 11, maxLength: 14 },
+    photo: { type: "string", nullable: true, maxLength: 6990600 },
+    email: { type: "string", nullable: true, format: "email", maxLength: 254 },
+    phone: { type: "string", nullable: true, maxLength: 20 },
+    address: { type: "string", nullable: true, maxLength: 255 },
+    city: { type: "string", nullable: true, maxLength: 100 },
+    state: { type: "string", nullable: true, minLength: 2, maxLength: 2 },
+    zipCode: { type: "string", nullable: true, maxLength: 9 },
   },
   additionalProperties: false,
 };
@@ -27,14 +27,14 @@ const visitorUpdateParams = {
   type: "object",
   required: ["name"],
   properties: {
-    name: { type: "string" },
-    photo: { type: "string", nullable: true },
-    email: { type: "string", nullable: true },
-    phone: { type: "string", nullable: true },
-    address: { type: "string", nullable: true },
-    city: { type: "string", nullable: true },
-    state: { type: "string", nullable: true },
-    zipCode: { type: "string", nullable: true },
+    name: { type: "string", minLength: 2, maxLength: 150 },
+    photo: { type: "string", nullable: true, maxLength: 6990600 },
+    email: { type: "string", nullable: true, format: "email", maxLength: 254 },
+    phone: { type: "string", nullable: true, maxLength: 20 },
+    address: { type: "string", nullable: true, maxLength: 255 },
+    city: { type: "string", nullable: true, maxLength: 100 },
+    state: { type: "string", nullable: true, minLength: 2, maxLength: 2 },
+    zipCode: { type: "string", nullable: true, maxLength: 9 },
   },
   additionalProperties: false,
 };
@@ -72,6 +72,7 @@ const visitorResponse = {
 };
 
 export async function visitorRouter(app: FastifyInstance) {
+  app.addHook("onRoute", (route) => { route.config = { ...route.config, permission: { resource: "visitors" } }; });
   app.addHook("preHandler", authJWT);
   app.addHook("preHandler", checkPermissions);
   const visitorController = new VisitorController();

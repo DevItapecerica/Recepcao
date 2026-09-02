@@ -23,6 +23,7 @@ const createUser = async () =>
     cpf: "529.982.247-25",
     password: await bcrypt.hash("secret123", 4),
     role: "admin",
+    firstLogin: false,
   });
 
 class MemorySessionRepository implements IUserSessionRepository {
@@ -73,6 +74,10 @@ class MemorySessionRepository implements IUserSessionRepository {
       this.session.revokedAt = new Date();
     }
   }
+
+  async revokeAllForUser(userId: string): Promise<void> {
+    if (this.session?.userId === userId) this.session.revokedAt = new Date();
+  }
 }
 
 const createService = async () => {
@@ -85,6 +90,14 @@ const createService = async () => {
   const sessions = new MemorySessionRepository();
   return { service: new Auth(users, sessions), sessions };
 };
+
+test("login rejects users with a pending activation", async () => {
+  const user = await createUser();
+  const users = { findUserByUsername: async () => user } as unknown as IUserRepository;
+  const activations = { hasPendingForUser: async () => true } as any;
+  const service = new Auth(users, new MemorySessionRepository(), activations);
+  await assert.rejects(() => service.Login("ana.silva", "secret123"), (error: AppError) => error.code === "ACCOUNT_NOT_ACTIVATED");
+});
 
 test("login preserves its response and replaces the active session", async () => {
   const { service, sessions } = await createService();

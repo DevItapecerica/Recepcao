@@ -7,16 +7,20 @@ import { useToast } from "@Context/toast/ToastContext";
 import { useForm, Controller } from "react-hook-form";
 import { useEffect } from "react";
 import { useSaveUser } from "@/hooks/queries/useUsers";
+import { useProfile } from "@Context/profile/ProfileContext";
 
 const rolesOption = [
   { label: "Admin", value: "admin" },
   { label: "User", value: "user" },
+  { label: "Recepcionista", value: "recepcionist" },
   { label: "Superadmin", value: "superadmin" },
 ];
 
 const UserModal = ({ visible, onHide, userTarget, setUserTarget }) => {
   const { showToast } = useToast();
   const saveUser = useSaveUser();
+  const { user: currentUser } = useProfile();
+  const availableRoles = currentUser?.role === "superadmin" ? rolesOption : rolesOption.filter(({ value }) => ["user", "recepcionist"].includes(value));
 
   const {
     register,
@@ -67,8 +71,8 @@ const UserModal = ({ visible, onHide, userTarget, setUserTarget }) => {
         const { message } = await saveUser.mutateAsync({ user: data, uuid: data.uuid });
         showToast("success", "Sucesso", message || "Atualizado com sucesso");
       } else {
-        const { message } = await saveUser.mutateAsync({ user: data });
-        showToast("success", "Sucesso", message || "Criado com sucesso");
+        const result = await saveUser.mutateAsync({ user: data });
+        showToast(result.activationSent ? "success" : "warn", result.activationSent ? "Sucesso" : "Atenção", result.activationSent ? result.message : "Usuário criado, mas o e-mail de ativação não pôde ser enviado");
       }
       handleClose();
     } catch (error) {
@@ -125,7 +129,7 @@ const UserModal = ({ visible, onHide, userTarget, setUserTarget }) => {
             render={({ field }) => (
               <Dropdown
                 {...field}
-                options={rolesOption}
+                options={availableRoles}
                 optionLabel="label"
                 placeholder="Selecione a função"
                 className={errors.role ? "p-invalid" : ""}

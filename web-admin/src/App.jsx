@@ -14,6 +14,7 @@ import { useThemeContext } from "@/context/theme/ThemeContext";
 import Singout from "./pages/Singout";
 import Terms from "./pages/terms/Terms";
 import PrivacyPolicy from "./pages/terms/PrivacityPolicy";
+import Activate from "./pages/Activate";
 
 const Admin = lazy(() => import("./pages/Admin"));
 const Dashboard = lazy(() => import("./pages/admin/dashboard/Dashboard"));
@@ -50,6 +51,7 @@ function App() {
             </Route>
             <Route path="/Terms" element={<Terms />}></Route>
             <Route path="/Privacity" element={<PrivacyPolicy />}></Route>
+            <Route path="/Activate" element={<Activate />} />
 
             <Route
               path="*"

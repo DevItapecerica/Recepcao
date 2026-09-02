@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { deleteUser, getUser, postUser, updateUser } from "@Service/User";
+import { deleteUser, getUser, postUser, resendUserActivation, updateUser } from "@Service/User";
 
 export const useUsersQuery = ({ page, limit, search }) =>
   useQuery({
@@ -24,3 +24,5 @@ export const useDeleteUser = () => {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["users"] }),
   });
 };
+
+export const useResendUserActivation = () => useMutation({ mutationFn: resendUserActivation });

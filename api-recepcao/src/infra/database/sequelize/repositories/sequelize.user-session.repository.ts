@@ -79,4 +79,8 @@ export class SequelizeUserSessionRepository
       { where: { refreshTokenHash, revokedAt: null } },
     );
   }
+
+  async revokeAllForUser(userId: string): Promise<void> {
+    await this.model.update({ revokedAt: new Date() }, { where: { userId, revokedAt: null } });
+  }
 }

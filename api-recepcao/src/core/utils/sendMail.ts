@@ -1,15 +1,15 @@
 import nodemailer from "nodemailer";
-import { SECRET_EMAIL, SECRET_PASSWORD } from "../config/env.js";
+import { MAIL_ADRESS, MAIL_HOST, MAIL_PASSWORD, MAIL_PORT, MAIL_SECURE } from "../config/env.js";
 
 export async function sendMail(to: string, subject: string, text: string) {
 
   const transporter = nodemailer.createTransport({
-    host: "mail.itapecerica.sp.gov.br", // servidor de email
-    port: 25,
-    secure: false, // true para porta 465
+    host: MAIL_HOST, // servidor de email
+    port: MAIL_PORT,
+    secure: MAIL_SECURE,
     auth: {
-      user: SECRET_EMAIL,
-      pass: SECRET_PASSWORD,
+      user: MAIL_ADRESS,
+      pass: MAIL_PASSWORD,
     },
   });
 

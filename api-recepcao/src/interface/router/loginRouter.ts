@@ -6,12 +6,14 @@ import { authJWT } from "../factories/auth/auth.factory.js";
 import { errorSchema } from "../../core/shared/schema/errorSchema.js";
 import { RefreshController } from "../controller/auth/refreshController.js";
 import { LogoutController } from "../controller/auth/logoutController.js";
+import { ActivationController } from "../controller/auth/activationController.js";
 
 export async function loginRouter(app: FastifyInstance) {
   app.route({
     method: "POST",
     url: "/",
     config: {
+      rateLimit: { max: 5, timeWindow: "1 minute", keyGenerator: (request) => `${request.ip}:${(request.body as { username?: string })?.username?.toLowerCase() || "unknown"}` },
       audit: {
         failureAction: "LOGIN",
         module: "AUTH",
@@ -27,10 +29,10 @@ export async function loginRouter(app: FastifyInstance) {
         required: ["username", "password"],
         properties: {
           username: {
-            type: "string",
+            type: "string", minLength: 1, maxLength: 50,
           },
           password: {
-            type: "string",
+            type: "string", minLength: 1, maxLength: 128,
           },
         },
       },
@@ -112,6 +114,7 @@ export async function loginRouter(app: FastifyInstance) {
   app.route({
     method: "POST",
     url: "/refresh",
+    config: { rateLimit: { max: 30, timeWindow: "1 minute" } },
     schema: {
       tags: ["Login"],
       summary: "Renova o token de acesso",
@@ -154,6 +157,7 @@ export async function loginRouter(app: FastifyInstance) {
     url: "/alterpwd",
     preHandler: [authJWT],
     config: {
+      rateLimit: { max: 5, timeWindow: "1 minute" },
       audit: {
         failureAction: "UPDATE",
         module: "AUTH",
@@ -167,9 +171,9 @@ export async function loginRouter(app: FastifyInstance) {
       body: {
         type: "object",
         properties: {
-          new_password: { type: "string" },
+          new_password: { type: "string", minLength: 10, maxLength: 128 },
           old_password: {
-            type: "string",
+            type: "string", minLength: 1, maxLength: 128,
           },
         },
         required: ["new_password", "old_password"],
@@ -188,5 +192,17 @@ export async function loginRouter(app: FastifyInstance) {
       },
     },
     handler: AlterPwdController,
+  });
+
+  app.route({
+    method: "POST",
+    url: "/activate",
+    config: { rateLimit: { max: 5, timeWindow: "1 minute" } },
+    schema: {
+      tags: ["Login"], summary: "Ativar uma nova conta",
+      body: { type: "object", additionalProperties: false, required: ["token", "password"], properties: { token: { type: "string", minLength: 32, maxLength: 128 }, password: { type: "string", minLength: 10, maxLength: 128 } } },
+      response: { 200: { type: "object", properties: { message: { type: "string" } } }, ...errorSchema },
+    },
+    handler: ActivationController,
   });
 }

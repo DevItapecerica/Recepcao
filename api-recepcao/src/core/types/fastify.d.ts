@@ -8,6 +8,8 @@ export interface AuditRouteMetadata {
   resourceIdParam?: string;
 }
 
+export type PermissionResource = "users" | "visitors" | "visits";
+
 declare module "fastify" {
   interface FastifyRequest {
     user: {
@@ -20,5 +22,6 @@ declare module "fastify" {
 
   interface FastifyContextConfig {
     audit?: AuditRouteMetadata;
+    permission?: { resource: PermissionResource };
   }
 }

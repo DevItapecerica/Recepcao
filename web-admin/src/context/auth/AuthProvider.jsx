@@ -2,23 +2,10 @@ import { AuthContext } from "./AuthContext";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { logoutSession, refreshSession, validateToken } from "../../service/Login";
 import { useProfile } from "../profile/ProfileContext";
-
-const isExpired = (token) => {
-  if (!token) return true;
-  try {
-    const payload = token.replace("Bearer ", "").split(".")[1];
-    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
-    const { exp } = JSON.parse(atob(normalized));
-    return !exp || exp * 1000 <= Date.now();
-  } catch {
-    return true;
-  }
-};
+import { setAccessToken } from "../../API/API";
 
 const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(
-    localStorage.getItem("token") ? localStorage.getItem("token") : null
-  );
+  const [token, setToken] = useState(null);
   const [status, setStatus] = useState("initializing");
   const [error, setError] = useState(null);
   const initializationStarted = useRef(false);
@@ -33,13 +20,13 @@ const AuthProvider = ({ children }) => {
   };
 
   const Login = useCallback((token) => {
-    localStorage.setItem("token", token);
+    setAccessToken(token);
     setToken(token);
     setStatus("authenticated");
   }, []);
 
   const clearSession = useCallback(() => {
-    localStorage.removeItem("token");
+    setAccessToken(null);
     setToken(null);
     setStatus("anonymous");
     attUser(null);
@@ -71,15 +58,13 @@ const AuthProvider = ({ children }) => {
     initializationStarted.current = true;
 
     const initialize = async () => {
-      let activeToken = localStorage.getItem("token");
-      if (isExpired(activeToken)) {
-        try {
-          activeToken = await refreshSession();
-          setToken(activeToken);
-        } catch {
-          clearSession();
-          return;
-        }
+      let activeToken;
+      try {
+        activeToken = await refreshSession();
+        setToken(activeToken);
+      } catch {
+        clearSession();
+        return;
       }
 
       try {

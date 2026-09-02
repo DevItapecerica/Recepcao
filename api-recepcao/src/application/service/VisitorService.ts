@@ -10,6 +10,7 @@ import { IVisitorRepository } from "../../domain/repositories/visitor/visitor.re
 import { VisitorPolicyDomainService } from "../../domain/services/visitor/visitorPolicy.domain.service.js";
 import { AppError } from "../../core/types/errorTypes.js";
 import { parsePagination } from "../../core/utils/pagination.js";
+import { assertValidImageData } from "../../core/utils/imageData.js";
 
 export class VisitorsService {
   constructor(
@@ -57,6 +58,7 @@ export class VisitorsService {
   async createVisitor(
     visitorData: VisitorsRequired
   ): Promise<VisitorsGenericResponse> {
+    assertValidImageData(visitorData.photo);
     const visitor = Visitor.create(visitorData);
     if (!visitor.isValidCpf()) {
       throw new AppError("CPF inválido", 400, "INVALID_CPF");
@@ -78,6 +80,7 @@ export class VisitorsService {
     uuid: string,
     visitorData: VisitorUpdate
   ): Promise<VisitorsGenericResponse> {
+    assertValidImageData(visitorData.photo);
     const updatedVisitor = await this.visitorRepository.findById(uuid);
 
     if (!updatedVisitor) {

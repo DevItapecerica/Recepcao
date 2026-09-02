@@ -50,7 +50,6 @@ describe("AuthProvider", () => {
   });
 
   it("limpa a sessão mesmo quando o logout remoto falha", async () => {
-    localStorage.setItem("token", token(Date.now() / 1000 + 900));
     authApi.logoutSession.mockRejectedValue(new Error("offline"));
     renderProvider();
     await screen.findByText("autenticado");

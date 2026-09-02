@@ -1,9 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { http, HttpResponse } from "msw";
-import API from "./API";
+import API, { setAccessToken } from "./API";
 import { server } from "../test/server";
 
 describe("interceptor de autenticação", () => {
+  afterEach(() => setAccessToken(null));
   it("compartilha um único refresh entre respostas 401 simultâneas", async () => {
     let refreshCount = 0;
     server.use(
@@ -14,12 +15,12 @@ describe("interceptor de autenticação", () => {
         return HttpResponse.json({ token: "Bearer renewed" });
       }),
     );
-    localStorage.setItem("token", "Bearer expired");
+    setAccessToken("Bearer expired");
 
     const responses = await Promise.all([API.get("/protected"), API.get("/protected")]);
 
     expect(responses.every(({ data }) => data.ok)).toBe(true);
     expect(refreshCount).toBe(1);
-    expect(localStorage.getItem("token")).toBe("Bearer renewed");
+    expect(localStorage.getItem("token")).toBeNull();
   });
 });

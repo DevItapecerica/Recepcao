@@ -41,7 +41,8 @@ export type GetUser = {
 
 export type UserGenericResponse = {
   message: string;
-  user: User
+  user: User;
+  activationSent?: boolean;
 }
 
 export type GetOneUser = {

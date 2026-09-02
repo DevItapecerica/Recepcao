@@ -19,4 +19,5 @@ export interface IUserRepository {
   listAllUserByFilter(options: UserListOptions): Promise<UserListResult>;
   updateUser(user: User): Promise<User>;
   deleteUser(uuid: string): Promise<void>;
+  countByRole(role: string): Promise<number>;
 }

@@ -32,3 +32,8 @@ export const alterPassword = async (req) => {
 
   return data;
 };
+
+export const activateAccount = async (token, password) => {
+  const { data } = await API.post("/login/activate", { token, password });
+  return data;
+};
