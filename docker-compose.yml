@@ -49,13 +49,13 @@ services:
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       ADMIN_CPF: ${ADMIN_CPF}
-
     expose:
       - 3000
-
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - dokploy-network
 
   frontend:
     container_name: recepcao_frontend
@@ -70,6 +70,12 @@ services:
       - api
     environment:
       NODE_ENV: ${NODE_ENV}
+    networks:
+      - dokploy-network
+ 
 
+networks:
+  dokploy-network:
+    external: true
 volumes:
   db_data:
