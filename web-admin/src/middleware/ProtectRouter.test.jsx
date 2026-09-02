@@ -4,7 +4,6 @@ import { describe, expect, it, vi } from "vitest";
 
 const authState = { isAuth: false, isInitializing: false, error: null };
 vi.mock("../context/auth/AuthContext", () => ({ useAuth: () => authState }));
-vi.mock("@/pages/nav/SideNav", () => ({ default: () => <nav>Menu</nav> }));
 import ProtectRouter from "./ProtectRouter";
 
 const renderRoutes = () => render(

@@ -1,7 +1,6 @@
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import TableHeader from "@/components/table/TableHeader";
-import { Paginator } from "primereact/paginator";
 
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
@@ -9,6 +8,10 @@ import { Button } from "primereact/button";
 import { useEffect, useState } from "react";
 import { useToast } from "@Context/toast/ToastContext";
 import { useUsersQuery } from "@/hooks/queries/useUsers";
+import { useDebounce } from "@/hooks/useDebounce";
+import RowActions from "@/components/table/RowActions";
+import { confirmDialog } from "primereact/confirmdialog";
+import { useDeleteUser } from "@/hooks/queries/useUsers";
 
 const columns = [
   { field: "first_name", header: "First Name" },
@@ -18,7 +21,7 @@ const columns = [
   { field: "role", header: "Role" },
 ];
 
-const UserTable = ({ setEditIsVisible, setExcludeIsVisible, setUserTarget }) => {
+const UserTable = ({ setEditIsVisible, setUserTarget }) => {
   const { showToast } = useToast();
   const [query, setQuery] = useState({
     page: 0,
@@ -26,9 +29,11 @@ const UserTable = ({ setEditIsVisible, setExcludeIsVisible, setUserTarget }) => 
     search: null,
   });
 
-  const { data, isPending, isFetching, error } = useUsersQuery(query);
+  const search = useDebounce(query.search);
+  const { data, isPending, isFetching, error } = useUsersQuery({ ...query, search });
   const users = data?.user || [];
   const totalUsers = data?.count || 0;
+  const deleteUser = useDeleteUser();
 
   useEffect(() => {
     if (error) showToast("error", "Erro", error.response?.data?.message || error.message);
@@ -40,29 +45,8 @@ const UserTable = ({ setEditIsVisible, setExcludeIsVisible, setUserTarget }) => 
       setEditIsVisible(true);
     };
 
-    const toExclude = () => {
-      setUserTarget(data);
-      setExcludeIsVisible(true);
-    };
-
-    return (
-      <div className="flex items-center gap-2">
-        <Button
-          icon="pi pi-pencil"
-          className="p-button-rounded p-button-text"
-          onClick={() => {
-            toEdit();
-          }}
-        />
-        <Button
-          icon="pi pi-trash"
-          className="p-button-rounded p-button-text p-button-danger"
-          onClick={() => {
-            toExclude();
-          }}
-        />
-      </div>
-    );
+    const remove = () => confirmDialog({ message: `Excluir ${data.first_name} ${data.last_name}?`, header: "Confirmar exclusão", icon: "pi pi-exclamation-triangle", acceptLabel: "Excluir", rejectLabel: "Cancelar", acceptClassName: "p-button-danger", accept: () => deleteUser.mutateAsync(data.uuid) });
+    return <RowActions label={`Ações de ${data.first_name}`} items={[{ label: "Editar", icon: "pi pi-pencil", command: toEdit }, { label: "Excluir", icon: "pi pi-trash", command: remove }]} />;
   };
 
   return (
@@ -70,7 +54,7 @@ const UserTable = ({ setEditIsVisible, setExcludeIsVisible, setUserTarget }) => 
       <div className="p-inputgroup flex-1 pb-4">
         <InputText
           type="search"
-          placeholder="Search by name"
+          placeholder="Buscar por nome"
           value={query.search || ""}
           onChange={(e) =>
             setQuery((prev) => ({
@@ -89,39 +73,26 @@ const UserTable = ({ setEditIsVisible, setExcludeIsVisible, setUserTarget }) => 
         end={
           <div className="md:flex items-center gap-2">
             <Button
-              label="New user"
+              label="Novo usuário"
               icon="pi pi-user-plus"
               className="btn-primary"
               onClick={() => setEditIsVisible(true)}
             />
           </div>
         }
-        center={<h2 className="text-2xl font-bold">Users</h2>}
+        center={<h2 className="text-2xl font-bold">Usuários</h2>}
         start={
           <div className="flex items-center gap-4">
-            <span>Total Users: {totalUsers}</span>
+            <span className="text-sm text-muted">{totalUsers} usuários</span>
           </div>
         }
       ></TableHeader>
-      <DataTable value={users} size="medium" stripedRows loading={isPending || isFetching} emptyMessage="Nenhum usuário encontrado.">
+      <DataTable value={users} lazy paginator first={query.page * query.limit} rows={query.limit} totalRecords={totalUsers} rowsPerPageOptions={[10, 20, 30]} onPage={(e) => setQuery((prev) => ({ ...prev, page: e.page, limit: e.rows }))} scrollable tableStyle={{ minWidth: "64rem" }} stripedRows loading={isPending || isFetching} emptyMessage="Nenhum usuário encontrado.">
         {columns.map((col, index) => (
           <Column key={index} field={col.field} header={col.header} />
         ))}
         <Column header="Actions" body={(rowData) => ActionsFields(rowData)} />
       </DataTable>
-      <Paginator
-        first={query.page * query.limit}
-        rows={query.limit}
-        totalRecords={totalUsers}
-        rowsPerPageOptions={[1, 10, 20, 30]}
-        onPageChange={(e) => {
-          setQuery((prev) => ({
-            ...prev,
-            page: e.page,
-            limit: e.rows,
-          }));
-        }}
-      />
     </section>
   );
 };

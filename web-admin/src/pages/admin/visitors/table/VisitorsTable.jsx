@@ -11,6 +11,7 @@ import { useToast } from "@Context/toast/ToastContext";
 
 import TableHeader from "@/components/table/TableHeader";
 import { useVisitorsQuery } from "@/hooks/queries/useVisitors";
+import { useDebounce } from "@/hooks/useDebounce";
 
 // 1. Receba o novo prop "setDetailsIsVisible"
 const VisitorsView = ({
@@ -27,12 +28,21 @@ const VisitorsView = ({
     search: null,
   });
 
-  const { data, isPending, isFetching, error } = useVisitorsQuery(query);
+  const search = useDebounce(query.search);
+  const { data, isPending, isFetching, error } = useVisitorsQuery({
+    ...query,
+    search,
+  });
   const visitors = data?.visitor || [];
   const totalVisitor = data?.count || 0;
 
   useEffect(() => {
-    if (error) showToast("error", "Erro", error.response?.data?.message || error.message);
+    if (error)
+      showToast(
+        "error",
+        "Erro",
+        error.response?.data?.message || error.message,
+      );
   }, [error, showToast]);
 
   const itemTemplate = (data) => {
@@ -66,13 +76,15 @@ const VisitorsView = ({
     };
 
     return (
-      <div className="flex items-center p-4 border border-gray-200 rounded-lg shadow-sm gap-4">
-        <Image
-          src={data.photo ? `${data.photo}` : "/placeholder.png"}
-          alt="visitor"
-          className="w-20 max-h-24 rounded-md object-cover overflow-hidden"
-          preview
-        />
+      <div className="flex items-center gap-4 border-b border-border bg-surface p-4 last:border-b-0">
+        <span>
+          <Image
+            src={data.photo ? `${data.photo}` : "/placeholder.png"}
+            alt="visitor"
+            className="w-20 max-h-24 rounded-md  overflow-hidden"
+            preview
+          />
+        </span>
         <div className="flex-1">
           <h4 className="font-semibold text-lg">
             {data.name} <span className="ml-3">{WarringField(data)}</span>
@@ -117,7 +129,7 @@ const VisitorsView = ({
       <div className="p-inputgroup flex-1 pb-4">
         <InputText
           type="search"
-          placeholder="Search by name"
+          placeholder="Buscar por nome"
           value={query.search || ""}
           onChange={(e) =>
             setQuery((prev) => ({
@@ -137,14 +149,14 @@ const VisitorsView = ({
         end={
           <div className="md:flex items-center gap-2">
             <Button
-              label="New Visitor"
+              label="Novo visitante"
               icon="pi pi-user-plus"
               className="btn-primary"
               onClick={() => setEditIsVisible(true)}
             />
           </div>
         }
-        center={<h2 className="text-2xl font-bold">Visitors</h2>}
+        center={<h2 className="text-2xl font-bold">Visitantes</h2>}
         start={
           <div className="flex items-center gap-4">
             <span>Total de Visitantes: {totalVisitor}</span>

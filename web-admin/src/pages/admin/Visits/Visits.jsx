@@ -29,7 +29,7 @@ export default function VisitsTable() {
   return (
     <section>
       <TableHeader
-        start={<h3 className="text-3xl">Visits</h3>}
+        start={<h1 className="text-2xl font-bold">Visitas</h1>}
         end={
           <div className="flex gap-4 items-end">
             <Button
@@ -66,8 +66,8 @@ export default function VisitsTable() {
         }
       />
 
-      <div className="shadow-sm p-4 rounded-2xl flex flex-col gap-">
-        <DataTable value={data?.visits || []} className="text-sm" loading={isPending || isFetching} emptyMessage="Nenhuma visita encontrada.">
+      <div className="app-surface overflow-hidden p-3 sm:p-4">
+        <DataTable value={data?.visits || []} scrollable tableStyle={{ minWidth: "62rem" }} loading={isPending || isFetching} emptyMessage="Nenhuma visita encontrada.">
           <Column
             header="Visitante"
             body={(rowData) => (
@@ -117,7 +117,7 @@ export default function VisitsTable() {
           first={query.page * query.limit}
           rows={query.limit}
           totalRecords={data?.count || 0}
-          rowsPerPageOptions={[1, 10, 20, 30]}
+          rowsPerPageOptions={[10, 20, 30]}
           onPageChange={(e) =>
             setQuery((prev) => ({
               ...prev,

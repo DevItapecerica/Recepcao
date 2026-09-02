@@ -14,7 +14,7 @@ const Config = () => {
   const { showToast } = useToast();
   const { user } = useProfile();
 
-  const { register, control, handleSubmit } = useForm({
+  const { register, control, handleSubmit, reset, watch, formState: { isSubmitting } } = useForm({
     defaultValues: {
       username: user?.name || "",
       old_password: "",
@@ -26,17 +26,13 @@ const Config = () => {
   // Submissão do formulário
   const onSubmit = async (data) => {
     try {
-      if (data.new_password != data.confirm_password) {
-        showToast("error", "Erro", "The two pass need be equal!");
-        return;
-      }
-      alert(JSON.stringify(data));
       const response = await alterPassword(data);
       showToast(
         "success",
         "Sucesso",
-        response.message || "Altered successfully"
+        response.message || "Senha alterada com sucesso"
       );
+      reset({ username: user?.name || "", old_password: "", new_password: "", confirm_password: "" });
     } catch (error) {
       showToast(
         "error",
@@ -47,9 +43,9 @@ const Config = () => {
   };
 
   return (
-    <div className="w-full bg-background rounded-md p-4 flex justify-center margin-auto">
-      <div className="bg-white w-full max-w-120 rounded-md flex items-center flex-col p-8">
-        <div className="bg-white shadow-2xl h-30 w-30 sm:h-40 sm:w-40 rounded-full">
+    <div className="flex w-full justify-center">
+      <div className="app-surface flex w-full max-w-xl flex-col items-center p-6 sm:p-8">
+        <div className="h-20 w-20 rounded-full">
           <Avatar
             shape="circle"
             size="xlarge"
@@ -64,65 +60,71 @@ const Config = () => {
           className="flex flex-col gap-4 w-full"
         >
           <div className="flex flex-col">
-            <label className="font-medium">Username</label>
+            <label htmlFor="username" className="mb-1 font-medium">Usuário</label>
             <InputText
-              defaultValue="username"
+              id="username"
               {...register("username")}
               disabled
             />
           </div>
           <div className="flex flex-col">
-            <label className="font-medium">Password</label>
-            <div className="p-inputgroup flex-1">
-              <span className="p-inputgroup-addon">*</span>
+            <label htmlFor="old_password" className="mb-1 font-medium">Senha atual</label>
+            <div className="w-full">
               <Controller
                 name="old_password"
                 control={control}
-                rules={{ required: "Mandatory" }}
+                rules={{ required: "Informe a senha atual" }}
                 render={({ field }) => (
                   <Password
+                    inputId="old_password"
                     value={field.value}
-                    onChange={(e) => field.onChange(e)}
+                    onChange={(e) => field.onChange(e.target.value)}
                     feedback={false}
                     toggleMask
+                    className="w-full"
+                    inputClassName="w-full"
                   />
                 )}
               />
             </div>
           </div>
           <div className="flex flex-col">
-            <label className="font-medium">New Password</label>
-            <div className="p-inputgroup flex-1">
-              <span className="p-inputgroup-addon">*</span>
+            <label htmlFor="new_password" className="mb-1 font-medium">Nova senha</label>
+            <div className="w-full">
               <Controller
                 name="new_password"
                 control={control}
-                rules={{ required: "Mandatory" }}
+                rules={{ required: "Informe a nova senha", minLength: { value: 6, message: "Use pelo menos 6 caracteres" } }}
                 render={({ field }) => (
                   <Password
+                    inputId="new_password"
                     value={field.value}
-                    onChange={(e) => field.onChange(e)}
+                    onChange={(e) => field.onChange(e.target.value)}
                     feedback={true}
                     toggleMask
+                    className="w-full"
+                    inputClassName="w-full"
                   />
                 )}
               />
             </div>
           </div>
           <div className="flex flex-col">
-            <label className="font-medium">Confirm Password</label>
-            <div className="p-inputgroup flex-1">
-              <span className="p-inputgroup-addon">*</span>
+            <label htmlFor="confirm_password" className="mb-1 font-medium">Confirmar nova senha</label>
+            <div className="w-full">
               <Controller
                 name="confirm_password"
                 control={control}
-                rules={{ required: "Mandatory" }}
+                rules={{ required: "Confirme a nova senha", validate: (value) => value === watch("new_password") || "As senhas não coincidem" }}
                 render={({ field }) => (
                   <Password
+                    inputId="confirm_password"
                     value={field.value}
-                    onChange={(e) => field.onChange(e)}
+                    onChange={(e) => field.onChange(e.target.value)}
                     feedback={false}
                     toggleMask
+                    className="w-full"
+                    inputClassName="w-full"
                   />
                 )}
               />
@@ -130,9 +132,11 @@ const Config = () => {
           </div>
           <div className="flex justify-end gap-2 mt-4">
             <Button
-              label="Salvar"
+              label="Alterar senha"
               className="btn-primary w-full"
               type="submit"
+              loading={isSubmitting}
+              disabled={isSubmitting}
             />
           </div>
         </form>

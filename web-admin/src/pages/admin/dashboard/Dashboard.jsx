@@ -28,7 +28,7 @@ const emptyDashboard = {
 };
 
 const MetricCard = ({ icon, label, value, detail }) => (
-  <article className="rounded-2xl bg-background shadow-sm p-5 flex items-center gap-4 min-h-32">
+  <article className="app-surface p-5 flex items-center gap-4 min-h-28">
     <div className="w-12 h-12 rounded-full bg-primary-light text-white flex items-center justify-center">
       <i className={`pi ${icon} text-xl`} />
     </div>
@@ -44,7 +44,7 @@ const BarChart = ({ title, data, minWidth = "0" }) => {
   const maximum = Math.max(...data.map((point) => point.count), 1);
 
   return (
-    <article className="rounded-2xl bg-background shadow-sm p-5 min-w-0">
+    <article className="app-surface p-5 min-w-0">
       <h2 className="text-xl font-semibold text-font-secondary mb-5">{title}</h2>
       <div className="overflow-x-auto">
         <div
@@ -85,7 +85,7 @@ export default function Dashboard() {
   const topVisitor = dashboard.mostFrequentVisitor;
 
   return (
-    <section className="p-4 md:p-6 flex flex-col gap-6">
+    <section className="flex flex-col gap-6">
       <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold text-font-secondary">Dashboard</h1>
@@ -125,7 +125,7 @@ export default function Dashboard() {
             <BarChart title="Visitas por horário" data={dashboard.visitsByHour} minWidth="720px" />
           </div>
 
-          <article className="rounded-2xl bg-background shadow-sm p-5">
+          <article className="app-surface p-5">
             <h2 className="text-xl font-semibold text-font-secondary mb-4">Visitantes mais frequentes</h2>
             {dashboard.ranking.length === 0 ? (
               <div className="py-12 text-center text-gray-500">

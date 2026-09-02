@@ -44,12 +44,12 @@ export default function Login() {
 
   /* ------------------------------------------------------------------ */
   return (
-    <div id="Login" className="flex justify-center items-center h-full w-full">
+    <main id="Login" className="mx-auto flex min-h-[calc(100dvh-8rem)] w-full max-w-md items-center px-4 py-10">
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="bg-window rounded-md p-4 shadow-2xl"
+        className="app-surface w-full p-6 sm:p-8"
       >
-        <h1 className="text-6xl text-center mb-4">Login</h1>
+        <div className="mb-7 text-center"><img src="/Brasao.png" alt="Brasão municipal" className="mx-auto mb-4 h-16 w-auto" /><h1 className="text-2xl font-bold text-font-primary">Acesso à Recepção</h1><p className="mt-1 text-sm text-muted">Prefeitura Municipal de Itapecerica da Serra</p></div>
 
         {/* ---------------------- USERNAME ---------------------- */}
         <div className="p-inputgroup flex-1 mb-4">
@@ -91,7 +91,9 @@ export default function Login() {
               <Password
                 feedback={false}
                 toggleMask
-                className={errors.password ? "p-invalid w-full" : "w-full"}
+                className="w-full"
+                inputClassName={`w-full ${errors.password ? "p-invalid" : ""}`}
+                inputId="password"
                 {...field}
               />
             )}
@@ -111,6 +113,6 @@ export default function Login() {
           disabled={isSubmitting}
         />
       </form>
-    </div>
+    </main>
   );
 }

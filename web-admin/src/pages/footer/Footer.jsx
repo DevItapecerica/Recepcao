@@ -1,9 +1,9 @@
 const Footer = () => {
 
     return(
-        <div id="Footer" className="bg-background text-center h-15 flex justify-center items-center">
-            <p>Prefeitura Municipal de Itapecerica da Serra - 2025</p>
-        </div>
+        <footer id="Footer" className="border-t border-border py-5 text-center text-xs text-muted">
+            <p>Prefeitura Municipal de Itapecerica da Serra · {new Date().getFullYear()}</p>
+        </footer>
     )
 }
 

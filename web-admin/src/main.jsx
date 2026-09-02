@@ -4,7 +4,6 @@ import App from "./App.jsx";
 
 import UseProviders from "./context/UseProviders";
 
-import "tailwindcss/index";
 import "./assets/styles/index.css";
 import "primeicons/primeicons.css";
 

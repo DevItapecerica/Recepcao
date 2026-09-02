@@ -2,6 +2,7 @@
 import { Toast } from "primereact/toast";
 import { useCallback, useMemo, useRef } from "react";
 import { ToastContext } from "./ToastContext"
+import { ConfirmDialog } from "primereact/confirmdialog";
 
 export const ToastProvider = ({ children }) => {
   const toastRef = useRef(null);
@@ -14,6 +15,7 @@ export const ToastProvider = ({ children }) => {
   return (
     <ToastContext.Provider value={value}>
       <Toast ref={toastRef} />
+      <ConfirmDialog />
       {children}
     </ToastContext.Provider>
   );

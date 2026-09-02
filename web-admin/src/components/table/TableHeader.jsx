@@ -1,38 +1,4 @@
-import { Fragment } from "react";
 import PropTypes from "prop-types";
-
-import { Toolbar } from "primereact/toolbar";
-
-const TableHeader = ({ start, center, end }) => {
-  const startContent = <Fragment>{start}</Fragment>;
-
-  const centerContent = <Fragment>{center}</Fragment>;
-
-  const endContent = (
-    <Fragment>
-      <div className="flex justify-end gap-4 items-center relative">{end}</div>
-    </Fragment>
-  );
-
-  return (
-    <div className="relative header-table">
-      <Toolbar
-        start={startContent}
-        center={centerContent}
-        end={endContent}
-        className="bg-background dark:border-none"
-        pt={{
-          root: { className: "relative " },
-          center: { className: "absolute left-[50%] translate-x-[-50%]" },
-        }}
-      />
-    </div>
-  );
-};
-TableHeader.propTypes = {
-  start: PropTypes.node,
-  center: PropTypes.node,
-  end: PropTypes.node,
-};
-
+const TableHeader = ({ start, center, end }) => <header className="mb-5 grid gap-4 md:grid-cols-[1fr_auto] md:items-end"><div>{center}<div className="mt-1 text-sm text-muted">{start}</div></div><div className="flex flex-wrap items-center gap-2 md:justify-end">{end}</div></header>;
+TableHeader.propTypes = { start: PropTypes.node, center: PropTypes.node, end: PropTypes.node };
 export default TableHeader;

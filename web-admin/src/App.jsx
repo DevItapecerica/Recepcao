@@ -28,9 +28,9 @@ function App() {
     <div
       id="App"
       data-theme={`${theme}`}
-      className="min-h-full flex flex-col text-gray-500 dark:text-gray-400"
+      className="min-h-dvh flex flex-col"
     >
-      <div id="Main" className="h-full overflow-scroll">
+      <div id="Main" className="flex min-h-dvh flex-col">
         <Router>
           <Nav />
           <Suspense fallback={<Loading />}>
@@ -62,7 +62,7 @@ function App() {
           </Routes>
           </Suspense>
         </Router>
-        <Footer />
+        <div className="mt-auto"><Footer /></div>
       </div>
     </div>
   );
