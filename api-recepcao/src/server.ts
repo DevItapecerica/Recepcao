@@ -2,6 +2,7 @@ import Fastify from "fastify";
 
 import { fastifySwagger } from "@fastify/swagger";
 import { fastifySwaggerUi } from "@fastify/swagger-ui";
+import fastifyCookie from "@fastify/cookie";
 
 import logConfig from "./core/config/logConfig.js";
 import ErrorHook from "./core/hooks/ErrorHook.js";
@@ -12,6 +13,7 @@ import corsConfig from "./core/config/cors.js";
 
 const fastify = Fastify(logConfig);
 
+await fastify.register(fastifyCookie);
 await fastify.register(corsConfig)
 
 await fastify.register(fastifySwagger, {

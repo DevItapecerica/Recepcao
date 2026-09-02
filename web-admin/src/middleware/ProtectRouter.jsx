@@ -10,7 +10,7 @@ import { validateToken } from "../service/Login";
 import { useLoading } from "../context/loading/LoadingContext";
 
 const ProtectRouter = () => {
-  const { isAuth, token, error, Logout } = useAuth();
+  const { isAuth, token, error, Logout, isInitializing } = useAuth();
   const { attImage, attUser, user } = useProfile();
   const { loading, attLoading } = useLoading();
 
@@ -20,21 +20,21 @@ const ProtectRouter = () => {
     attLoading(true);
     try {
       const response = await validateToken();
-      console.log(response)
       const { name, role, uuid } = response.user;
       attImage(response.user.image);
       await attUser({ name, role, uuid });
     } catch (error) {
-      if (error.status == 401) Logout();
+      if (error.response?.status === 401) await Logout();
     } finally {
       attLoading(false);
     }
   };
 
   useEffect(() => {
+    if (isInitializing) return;
     !isAuth || !token ? Navigate("/") : "";
-    Validate();
-  }, [token, isAuth]);
+    if (isAuth && token) Validate();
+  }, [token, isAuth, isInitializing]);
 
   if (error) {
     <div className="h-full bg-content m-auto border-b border-gray-200 dark:border-none mb-1 flex md:flex-row flex-col">
@@ -44,7 +44,7 @@ const ProtectRouter = () => {
     </div>;
   }
 
-  if (loading) {
+  if (loading || isInitializing) {
     return <></>;
   }
 

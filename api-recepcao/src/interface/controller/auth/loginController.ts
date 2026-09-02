@@ -1,5 +1,9 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { authService } from "../../factories/auth/auth.factory.js";
+import {
+  REFRESH_TOKEN_COOKIE,
+  refreshTokenCookieOptions,
+} from "../../../core/config/authCookie.js";
 
 
 interface LoginRequestBody {
@@ -13,6 +17,12 @@ export const loginController = async (
 ) => {
   const { username, password } = req.body;
   const result = await authService.Login(username, password);
+
+  reply.setCookie(
+    REFRESH_TOKEN_COOKIE,
+    result.refreshToken,
+    refreshTokenCookieOptions,
+  );
 
   reply.status(200).send({
     message: "Login bem‑sucedido",

@@ -4,6 +4,8 @@ import { ValidateTokenController } from "../controller/auth/validateTokenControl
 import { AlterPwdController } from "../controller/auth/alterpwdController.js";
 import { authJWT } from "../factories/auth/auth.factory.js";
 import { errorSchema } from "../../core/shared/schema/errorSchema.js";
+import { RefreshController } from "../controller/auth/refreshController.js";
+import { LogoutController } from "../controller/auth/logoutController.js";
 
 export async function loginRouter(app: FastifyInstance) {
   app.route({
@@ -105,6 +107,46 @@ export async function loginRouter(app: FastifyInstance) {
       },
     },
     handler: ValidateTokenController,
+  });
+
+  app.route({
+    method: "POST",
+    url: "/refresh",
+    schema: {
+      tags: ["Login"],
+      summary: "Renova o token de acesso",
+      description: "Rotaciona o refresh token recebido por cookie HttpOnly",
+      response: {
+        200: {
+          type: "object",
+          required: ["message", "token"],
+          properties: {
+            message: { type: "string" },
+            token: { type: "string" },
+          },
+        },
+        ...errorSchema,
+      },
+    },
+    handler: RefreshController,
+  });
+
+  app.route({
+    method: "POST",
+    url: "/logout",
+    schema: {
+      tags: ["Login"],
+      summary: "Encerra a sessÃ£o atual",
+      response: {
+        200: {
+          type: "object",
+          required: ["message"],
+          properties: { message: { type: "string" } },
+        },
+        ...errorSchema,
+      },
+    },
+    handler: LogoutController,
   });
 
   app.route({

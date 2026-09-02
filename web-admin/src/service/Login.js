@@ -1,4 +1,4 @@
-import API from "@API/API";
+import API, { refreshAccessToken } from "@API/API";
 
 export const handdleLogin = async (username, password) => {
   const { data } = await API.post("/login", {
@@ -14,6 +14,13 @@ export const validateToken = async () => {
 
   const { data } = await API.post("/login/verify", { token });
 
+  return data;
+};
+
+export const refreshSession = async () => refreshAccessToken();
+
+export const logoutSession = async () => {
+  const { data } = await API.post("/login/logout");
   return data;
 };
 

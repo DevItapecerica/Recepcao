@@ -8,6 +8,7 @@ const corsConfig = (fastify: FastifyInstance) => {
   return (fastify.register(fastifyCors, {
     methods: ["GET", "POST", "PUT", "DELETE"],
     origin: corsOptions,
+    credentials: true,
   }));
 };
 
