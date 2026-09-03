@@ -16,11 +16,7 @@ services:
     networks:
       - dokploy-network
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "mysqladmin ping -h localhost -u${MYSQL_USER} -p${MYSQL_PASSWORD} || exit 1",
-        ]
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -31,7 +27,7 @@ services:
       context: ./api-recepcao
       dockerfile: Dockerfile
     environment:
-      NODE_ENV: 'production'
+      NODE_ENV: production
       APPLICATION_PORT: 3000
       SECRET_KEY_JWT: ${SECRET_KEY_JWT}
       
@@ -67,9 +63,9 @@ services:
       context: ./web-admin
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: 'recepcao_api:3000'
-    expose:
-      - 80
+        VITE_API_URL: api:3000
+    ports:
+      - 80:80
     depends_on:
       - api
     environment:
