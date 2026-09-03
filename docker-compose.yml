@@ -64,8 +64,8 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_URL: api:3000
-    ports:
-      - 80:80
+    expose:
+      - 80
     depends_on:
       - api
     environment:
