@@ -8,7 +8,6 @@ RUN npm install -g typescript
 
 COPY . .
 RUN npm run build
-RUN npx sequelize-cli db:migrate
 
 # Etapa 2: produção
 FROM node:lts-alpine
