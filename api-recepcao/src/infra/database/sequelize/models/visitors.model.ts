@@ -92,12 +92,18 @@ export default (sequelize: Sequelize, dataTypes: typeof DataTypes) => {
   );
 
   (Visitors as any).associate = (models: any) => {
-    Visitors.hasMany(models.VisitsModel, {
-      foreignKey: "visitor_uuid",
-      as: "VisitorVisits",
-      onDelete: "CASCADE",
-    });
-  };
+  Visitors.hasMany(models.VisitsModel, {
+    foreignKey: "visitor_uuid",
+    as: "VisitorVisits",
+    onDelete: "CASCADE",
+  });
+
+  Visitors.hasMany(models.OccurrenceRecordModel, {
+    foreignKey: "visitor_uuid",
+    as: "VisitorOccurrences",
+    onDelete: "RESTRICT",
+  });
+};
 
   return Visitors;
 };
