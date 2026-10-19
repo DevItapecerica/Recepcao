@@ -11,8 +11,12 @@ import { Dropdown } from "primereact/dropdown";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Calendar } from "primereact/calendar";
 import { useToast } from "@Context/toast/ToastContext";
-
-import { useOccurrenceTypesQuery,  useAddOccurrence,} from "@/hooks/queries/useOccurrences";
+import { useProfile } from "../../../../context/profile/ProfileContext";import {
+  useOccurrenceTypesQuery,
+  useAddOccurrence,
+  useDeleteOccurrence,
+    useUpdateOccurrence,
+} from "@/hooks/queries/useOccurrences";
 
 const API_URL = "/api/v1/occurrences";
 
@@ -23,10 +27,29 @@ const OccurrencesModal = ({
   setVisitorTarget,
 }) => {
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+  const [occurrenceToEdit, setOccurrenceToEdit] = useState(null);
+  const [occurrenceToDelete, setOccurrenceToDelete] = useState(null);
   const { showToast } = useToast();
-
+const { user } = useProfile();
+const isSuperadmin = user?.role === "superadmin";
 const typesQuery = useOccurrenceTypesQuery();
 const addOccurrence = useAddOccurrence();
+const deleteOccurrence = useDeleteOccurrence();
+const updateOccurrence = useUpdateOccurrence();
+const {
+  control: editControl,
+  handleSubmit: handleEditSubmit,
+  watch: editWatch,
+  reset: resetEdit,
+  formState: { errors: editErrors },
+} = useForm({
+  defaultValues: {
+    occurrence_uuid: "",
+    severity: null,
+    observation: "",
+    occurredAt: new Date(),
+  },
+});
 
 const {
   control,
@@ -52,6 +75,29 @@ const selectedType = occurrenceTypes.find(
 );
 
 const isOther = selectedType?.severity == null;
+const editSelectedTypeUuid = editWatch("occurrence_uuid");
+
+const editSelectedType = occurrenceTypes.find(
+  (type) => type.uuid === editSelectedTypeUuid
+);
+
+const editIsOther = editSelectedType?.severity == null;
+
+const openEditModal = (occurrence) => {
+  resetEdit({
+    occurrence_uuid: occurrence.occurrence_uuid,
+    severity: occurrence.severity,
+    observation: occurrence.observation || "",
+    occurredAt: new Date(occurrence.occurredAt),
+  });
+
+  setOccurrenceToEdit(occurrence);
+};
+
+const closeEditModal = () => {
+  setOccurrenceToEdit(null);
+  resetEdit();
+};
 
 const closeAddModal = () => {
   setIsAddModalVisible(false);
@@ -129,6 +175,65 @@ const submitOccurrence = async (values) => {
       timeStyle: "short",
     });
 
+    const submitEditOccurrence = async (values) => {
+  if (!occurrenceToEdit || !visitorTarget?.uuid) return;
+
+  const payload = {
+    occurrence_uuid: values.occurrence_uuid,
+    observation: values.observation,
+    occurredAt: values.occurredAt.toISOString(),
+  };
+
+  if (editIsOther) {
+    payload.severity = Number(values.severity);
+  }
+
+  try {
+    await updateOccurrence.mutateAsync({
+      uuid: occurrenceToEdit.uuid,
+      occurrence: payload,
+    });
+
+    showToast(
+      "success",
+      "Sucesso",
+      "Ocorrência atualizada com sucesso!"
+    );
+
+    closeEditModal();
+  } catch (error) {
+    showToast(
+      "error",
+      "Erro",
+      error.response?.data?.message || error.message
+    );
+  }
+};
+
+    const confirmDeleteOccurrence = async () => {
+  if (!occurrenceToDelete) return;
+
+  try {
+await deleteOccurrence.mutateAsync({
+  uuid: occurrenceToDelete.uuid,
+  visitorUuid: visitorTarget.uuid,
+});
+    showToast(
+      "success",
+      "Sucesso",
+      "Ocorrência excluída com sucesso!"
+    );
+
+    setOccurrenceToDelete(null);
+  } catch (error) {
+    showToast(
+      "error",
+      "Erro",
+      error.response?.data?.message || error.message
+    );
+  }
+};
+
   return (
     <>
       <Dialog
@@ -200,7 +305,35 @@ const submitOccurrence = async (values) => {
               <Column header="Gravidade" body={severityTemplate} />
               <Column header="Data e hora" body={dateTemplate} />
               <Column field="observation" header="Observação" />
+              <Column
+  header="Ações"
+  body={(row) => (
+    <div className="flex items-center gap-2">
+      <Button
+        icon="pi pi-pencil"
+        className="p-button-rounded p-button-text"
+        tooltip="Editar ocorrência"
+        tooltipOptions={{ position: "top" }}
+onClick={() => openEditModal(row)}      />
+
+{isSuperadmin && (
+  <Button
+    icon="pi pi-trash"
+    onClick={() => setOccurrenceToDelete(row)}
+    className="p-button-danger p-button-text"
+    tooltip="Excluir ocorrência"/>)}
+    </div>
+
+    
+    )}/>
+    
+
             </DataTable>
+                <div className="mt-4 border-t border-gray-200 pt-3 text-center">
+      <p className="text-xs text-gray-500">
+        Para solicitar a exclusão de uma ocorrência, entre em contato com o setor de TI.
+      </p>
+    </div>
           </div>
         )}
       </Dialog>
@@ -214,6 +347,7 @@ const submitOccurrence = async (values) => {
   modal
   onHide={closeAddModal}
 >
+    
   <form
     onSubmit={handleSubmit(submitOccurrence)}
     className="flex flex-col gap-4 p-fluid mt-4"
@@ -362,12 +496,188 @@ const submitOccurrence = async (values) => {
         className="btn-primary"
         loading={addOccurrence.isPending}
       />
+      
     </div>
   </form>
 </Dialog>
+  <Dialog
+    header="Excluir ocorrência"
+    visible={Boolean(occurrenceToDelete)}
+    style={{ width: "28rem" }}
+    breakpoints={{ "641px": "95vw" }}
+    modal
+    onHide={() => setOccurrenceToDelete(null)}
+  >
+    <div className="flex flex-col gap-4 mt-3">
+      <p>Tem certeza de que deseja excluir esta ocorrência?</p>
 
-    </>
-  );
+      <p className="text-sm text-gray-500">
+        A ocorrência deixará de contar na pontuação do munícipe,
+        mas a exclusão ficará registrada na auditoria.
+      </p>
+
+      <div className="flex justify-end gap-2">
+        <Button
+          label="Cancelar"
+          severity="secondary"
+          onClick={() => setOccurrenceToDelete(null)}
+          disabled={deleteOccurrence.isPending}
+        />
+
+        <Button
+          label="Excluir"
+          icon="pi pi-trash"
+          severity="danger"
+          loading={deleteOccurrence.isPending}
+          onClick={confirmDeleteOccurrence}
+        />
+      </div>
+    </div>
+  </Dialog>
+  {/* MODAL DE EDITAR OCORRÊNCIA */}
+<Dialog
+  header="Editar ocorrência"
+  visible={Boolean(occurrenceToEdit)}
+  style={{ width: "35rem" }}
+  breakpoints={{ "641px": "95vw" }}
+  modal
+  onHide={closeEditModal}
+>
+  <form
+    onSubmit={handleEditSubmit(submitEditOccurrence)}
+    className="flex flex-col gap-4 p-fluid mt-4"
+  >
+    {/* Tipo de ocorrência */}
+    <div>
+      <label className="font-bold block mb-2">
+        Tipo de ocorrência
+      </label>
+
+      <Controller
+        name="occurrence_uuid"
+        control={editControl}
+        rules={{ required: "Selecione uma ocorrência." }}
+        render={({ field }) => (
+          <Dropdown
+            value={field.value}
+            onChange={(e) => field.onChange(e.value)}
+            options={occurrenceTypes}
+            optionLabel="name"
+            optionValue="uuid"
+            placeholder="Selecione a ocorrência"
+            filter
+            className={editErrors.occurrence_uuid ? "p-invalid" : ""}
+          />
+        )}
+      />
+    </div>
+
+    {/* Gravidade */}
+    {editSelectedType && (
+      <div>
+        <label className="font-bold block mb-2">
+          Gravidade
+        </label>
+
+        {editIsOther ? (
+          <Controller
+            name="severity"
+            control={editControl}
+            rules={{ required: "Selecione a gravidade." }}
+            render={({ field }) => (
+              <Dropdown
+                value={field.value}
+                onChange={(e) => field.onChange(e.value)}
+                options={[1, 2, 3, 4, 5].map((n) => ({
+                  label: `Nível ${n}`,
+                  value: n,
+                }))}
+                placeholder="Selecione de 1 a 5"
+              />
+            )}
+          />
+        ) : (
+          <div className="p-3 rounded-lg bg-content">
+            Nível {editSelectedType.severity} de 5
+          </div>
+        )}
+
+        <small className="text-gray-500">
+          1 = menos grave | 5 = mais grave
+        </small>
+      </div>
+    )}
+
+    {/* Data e hora */}
+    <div>
+      <label className="font-bold block mb-2">
+        Data e hora
+      </label>
+
+      <Controller
+        name="occurredAt"
+        control={editControl}
+        rules={{ required: "Informe a data." }}
+        render={({ field }) => (
+          <Calendar
+            value={field.value}
+            onChange={(e) => field.onChange(e.value)}
+            showTime
+            hourFormat="24"
+            dateFormat="dd/mm/yy"
+            maxDate={new Date()}
+            showIcon
+          />
+        )}
+      />
+    </div>
+
+    {/* Observação */}
+    <div>
+      <label className="font-bold block mb-2">
+        Observação
+      </label>
+
+      <Controller
+        name="observation"
+        control={editControl}
+        render={({ field }) => (
+          <InputTextarea
+            {...field}
+            rows={4}
+            autoResize
+            placeholder="Descreva o que aconteceu..."
+          />
+        )}
+      />
+    </div>
+
+    {/* Botões */}
+    <div className="flex justify-end gap-2 mt-2">
+      <Button
+        type="button"
+        label="Cancelar"
+        severity="secondary"
+        onClick={closeEditModal}
+      />
+
+      <Button
+        type="submit"
+        label="Salvar alterações"
+        icon="pi pi-check"
+        className="btn-primary"
+        loading={updateOccurrence.isPending}
+      />
+       
+      
+    </div>
+    
+  </form>
+  
+</Dialog>
+
+  </>
+);
 };
 
 export default OccurrencesModal;

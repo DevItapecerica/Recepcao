@@ -119,9 +119,20 @@ export async function occurrencesRouter(app: FastifyInstance) {
 
   // 6. Excluir logicamente uma ocorrência
   app.route({
-    method: "DELETE",
-    url: "/:uuid",
-    schema: {
+  method: "DELETE",
+  url: "/:uuid",
+
+  preHandler: async (request) => {
+    if (request.user?.role !== "superadmin") {
+      throw new AppError(
+        "Somente o superadmin pode excluir ocorrências",
+        403,
+        "FORBIDDEN",
+      );
+    }
+  },
+
+  schema: {
       tags: ["Occurrences"],
       summary: "Excluir ocorrência sem apagar a auditoria",
       params: uuidParamsSchema,

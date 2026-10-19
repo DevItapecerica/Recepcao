@@ -90,10 +90,9 @@ export const useDeleteOccurrence = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: deleteOccurrence,
-    onSuccess: (data) => {
-      const visitorUuid = data.status?.visitor_uuid;
+    mutationFn: ({ uuid }) => deleteOccurrence(uuid),
 
+    onSuccess: (_data, { visitorUuid }) => {
       queryClient.invalidateQueries({
         queryKey: ["visitor-occurrences", visitorUuid],
       });

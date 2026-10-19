@@ -126,8 +126,8 @@ const VisitorsView = ({
           />
         </span>
         <div className="flex-1">
-          <h4 className="font-semibold text-lg flex items-center gap-2">
-            <span>{data.name}</span>
+        <h4 className="font-semibold text-lg flex flex-wrap items-center gap-2">
+              <span>{data.name}</span>
 
             <OccurrenceStatusDot visitorUuid={data.uuid} />
           </h4>
