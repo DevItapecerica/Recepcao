@@ -120,7 +120,7 @@ const VisitorsView = ({
         <span>
           <Image
             src={data.photo ? `${data.photo}` : "/placeholder.png"}
-            alt="visitor"
+            alt="Foto do visitante"
             className="w-20 max-h-24 rounded-md  overflow-hidden"
             preview
           />

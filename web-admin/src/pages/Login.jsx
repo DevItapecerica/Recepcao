@@ -1,3 +1,4 @@
+
 import { useForm, Controller } from "react-hook-form";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
@@ -17,6 +18,7 @@ export default function Login() {
   const { Login } = useAuth();
   const navigate = useNavigate();
   const { showToast } = useToast();
+
   /* ------------------------------------------------------------------ */
   const {
     control,
@@ -51,7 +53,7 @@ export default function Login() {
       >
         <div className="mb-7 text-center"><img src="/Brasao.png" alt="Brasão municipal" className="mx-auto mb-4 h-16 w-auto" /><h1 className="text-2xl font-bold text-font-primary">Acesso à Recepção</h1><p className="mt-1 text-sm text-muted">Prefeitura Municipal de Itapecerica da Serra</p></div>
 
-        {/* ---------------------- USERNAME ---------------------- */}
+        {/* NOME DE USUÁRIO */}
         <div className="p-inputgroup flex-1 mb-4">
           <span className="p-inputgroup-addon">
             <i className="pi pi-user" />
@@ -63,7 +65,7 @@ export default function Login() {
             rules={{ required: "Usuário obrigatório" }}
             render={({ field }) => (
               <InputText
-                placeholder="Username"
+                placeholder="Nome de usuário"
                 className={errors.username ? "p-invalid flex-1" : "flex-1"}
                 {...field}
               />
@@ -76,7 +78,7 @@ export default function Login() {
           </small>
         )}
 
-        {/* ---------------------- PASSWORD ---------------------- */}
+        {/* SENHA */}
         <div className="p-inputgroup flex-1 mb-6">
           <span className="p-inputgroup-addon">*</span>
 
@@ -105,9 +107,9 @@ export default function Login() {
           </small>
         )}
 
-        {/* ---------------------- SUBMIT ------------------------ */}
+        {/* ENTRAR */}
         <Button
-          label={"Login"}
+          label={"Entrar"}
           type="submit"
           className="btn-primary w-full"
           disabled={isSubmitting}

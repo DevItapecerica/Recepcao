@@ -1,4 +1,4 @@
-import { fn, col, Op } from "sequelize";
+import { fn, col, Op, literal} from "sequelize";
 import {
   IVisitRepository,
   VisitDashboardOptions,
@@ -12,6 +12,7 @@ import db from "../index.js";
 import { Visits } from "../models/visits.model.js";
 import { Visit } from "../../../../domain/entities/Visit.js";
 import { UserDB } from "../models/user.model.js";
+
 import { Visitors } from "../models/visitors.model.js";
 import { User } from "../../../../domain/entities/User.js";
 import { Visitor } from "../../../../domain/entities/Visitor.js";
@@ -113,7 +114,7 @@ export class SequelizeVisitRepository implements IVisitRepository {
       }),
       this.model.findAll({
         attributes: [
-          [fn("HOUR", col("visited_at")), "bucket"],
+          [fn("HOUR", fn("DATE_SUB", col("visited_at"), literal("INTERVAL 3 HOUR"))), "bucket"],
           [fn("COUNT", col("uuid")), "count"],
         ],
         where,
@@ -183,10 +184,23 @@ export class SequelizeVisitRepository implements IVisitRepository {
     };
   }
 
-  private parseVisitDate(value: string): Date {
-    const normalized = value.replace(" ", "T").replace(/Z$/, "");
-    return new Date(`${normalized.replace(/([+-]\d{2}:\d{2})$/, "")}-03:00`);
+  
+private parseVisitDate(value: string): Date {
+  const normalized = value.trim().replace(" ", "T");
+
+  const hasTimezone = /(?:Z|[+-]\d{2}:\d{2})$/i.test(normalized);
+
+  const parsedDate = new Date(
+    hasTimezone ? normalized : `${normalized}-03:00`
+  );
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    throw new Error("Data e hora da visita inválidas");
   }
+
+  return parsedDate;
+}
+
 }
 
 export const visitRepository = new SequelizeVisitRepository();

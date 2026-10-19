@@ -1,3 +1,4 @@
+
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { InputMask } from "primereact/inputmask";
@@ -10,10 +11,10 @@ import { useSaveUser } from "@/hooks/queries/useUsers";
 import { useProfile } from "@Context/profile/ProfileContext";
 
 const rolesOption = [
-  { label: "Admin", value: "admin" },
-  { label: "User", value: "user" },
+  { label: "Administrador", value: "admin" },
+  { label: "Usuário", value: "user" },
   { label: "Recepcionista", value: "recepcionist" },
-  { label: "Superadmin", value: "superadmin" },
+  { label: "Superadministrador", value: "superadmin" },
 ];
 
 const UserModal = ({ visible, onHide, userTarget, setUserTarget }) => {
@@ -104,7 +105,7 @@ const UserModal = ({ visible, onHide, userTarget, setUserTarget }) => {
         {/* Primeiro Nome */}
         <div>
           <label className="font-medium">Primeiro Nome</label>
-          <InputText {...register("first_name", { required: "Mandatory" })} />
+          <InputText {...register("first_name", { required: "Campo obrigatório" })} />
           {errors.first_name && (
             <small className="text-red-500">{errors.first_name.message}</small>
           )}
@@ -113,7 +114,7 @@ const UserModal = ({ visible, onHide, userTarget, setUserTarget }) => {
         {/* Sobrenome */}
         <div>
           <label className="font-medium">Sobrenome</label>
-          <InputText {...register("last_name", { required: "Mandatory" })} />
+          <InputText {...register("last_name", { required: "Campo obrigatório" })} />
           {errors.last_name && (
             <small className="text-red-500">{errors.last_name.message}</small>
           )}
@@ -125,7 +126,7 @@ const UserModal = ({ visible, onHide, userTarget, setUserTarget }) => {
           <Controller
             name="role"
             control={control}
-            rules={{ required: "Mandatory" }}
+            rules={{ required: "Campo obrigatório" }}
             render={({ field }) => (
               <Dropdown
                 {...field}
@@ -148,7 +149,7 @@ const UserModal = ({ visible, onHide, userTarget, setUserTarget }) => {
           <label className="font-medium">E-mail</label>
           <InputText
             type="email"
-            {...register("email", { required: "Mandatory" })}
+            {...register("email", { required: "Campo obrigatório" })}
           />
           {errors.email && (
             <small className="text-red-500">{errors.email.message}</small>
@@ -161,7 +162,7 @@ const UserModal = ({ visible, onHide, userTarget, setUserTarget }) => {
           <Controller
             name="cpf"
             control={control}
-            rules={{ required: !userTarget ? "Mandatory" : false }}
+            rules={{ required: !userTarget ? "Campo obrigatório" : false }}
             render={({ field }) => (
               <InputMask
                 {...field}
