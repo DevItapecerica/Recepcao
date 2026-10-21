@@ -1,4 +1,4 @@
-import { fn, col, Op } from "sequelize";
+import { fn, col, literal, Op } from "sequelize";
 import {
   IVisitRepository,
   VisitDashboardOptions,
@@ -104,20 +104,20 @@ export class SequelizeVisitRepository implements IVisitRepository {
       }),
       this.model.findAll({
         attributes: [
-          [fn("DAYOFWEEK", col("visited_at")), "bucket"],
+          [fn("DAYOFWEEK", fn("DATE_SUB", col("visited_at"), literal("INTERVAL 3 HOUR"))), "bucket"],
           [fn("COUNT", col("uuid")), "count"],
         ],
         where,
-        group: [fn("DAYOFWEEK", col("visited_at"))],
+        group: [fn("DAYOFWEEK", fn("DATE_SUB", col("visited_at"), literal("INTERVAL 3 HOUR")))],
         raw: true,
       }),
       this.model.findAll({
         attributes: [
-          [fn("HOUR", col("visited_at")), "bucket"],
+          [fn("HOUR", fn("DATE_SUB", col("visited_at"), literal("INTERVAL 3 HOUR"))), "bucket"],
           [fn("COUNT", col("uuid")), "count"],
         ],
         where,
-        group: [fn("HOUR", col("visited_at"))],
+        group: [fn("HOUR", fn("DATE_SUB", col("visited_at"), literal("INTERVAL 3 HOUR")))],
         raw: true,
       }),
     ]);
@@ -184,8 +184,11 @@ export class SequelizeVisitRepository implements IVisitRepository {
   }
 
   private parseVisitDate(value: string): Date {
-    const normalized = value.replace(" ", "T").replace(/Z$/, "");
-    return new Date(`${normalized.replace(/([+-]\d{2}:\d{2})$/, "")}-03:00`);
+    const normalized = value.replace(" ", "T");
+    // ISO timestamps with Z/offset are absolute instants from the browser. Keep
+    // their timezone; only legacy/local values need São Paulo's UTC-3 offset.
+    if (/(Z|[+-]\d{2}:\d{2})$/i.test(normalized)) return new Date(normalized);
+    return new Date(`${normalized}-03:00`);
   }
 }
 

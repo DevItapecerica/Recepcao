@@ -27,14 +27,14 @@ export default defineConfig({
     },
   },
   server: {
-    host: "0.0.0.0", //Acesso externo
-    port: 5173,
-    proxy: {
-      "/api/v1": {
-        target: "http://192.168.16.13:3000",
-        changeOrigin: false,
-        secure: false,
-      },
+  host: "0.0.0.0", //Acesso externo
+  port: 5173,
+  proxy: {
+    "/api/v1": {
+      target: "http://localhost:3000",
+      changeOrigin: false,
+      secure: false,
     },
   },
+},
 });

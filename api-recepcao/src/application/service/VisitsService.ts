@@ -44,7 +44,7 @@ export class VisitsService {
       limit < 1 ||
       limit > 20
     ) {
-      throw new AppError("Invalid dashboard filters", 400, "INVALID_DASHBOARD_FILTERS");
+      throw new AppError("Filtros do painel inválidos", 400, "INVALID_DASHBOARD_FILTERS");
     }
 
     const dashboard = await this.visitRepository.dashboard({
@@ -118,7 +118,7 @@ export class VisitsService {
     });
 
     if (!rows.length) {
-      throw new AppError("No visits found", 404, "NOT_FOUND");
+      throw new AppError("Nenhuma visita encontrada", 404, "NOT_FOUND");
     }
 
     return {
@@ -145,7 +145,7 @@ export class VisitsService {
     const newVisits = await this.visitRepository.create(Visit.create(visitsData));
 
     return {
-      message: "visit created success",
+      message: "Visita registrada com sucesso",
       visits: newVisits,
     };
   }
@@ -158,7 +158,7 @@ export class VisitsService {
 
     if (!visits.length) {
       throw new AppError(
-        "No visits found for the given visitor ID",
+        "Nenhuma visita encontrada para este visitante",
         404,
         "NOT_FOUND",
       );

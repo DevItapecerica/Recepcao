@@ -63,7 +63,7 @@ export default function Login() {
             rules={{ required: "Usuário obrigatório" }}
             render={({ field }) => (
               <InputText
-                placeholder="Username"
+                placeholder="Usuário"
                 className={errors.username ? "p-invalid flex-1" : "flex-1"}
                 {...field}
               />
@@ -107,7 +107,7 @@ export default function Login() {
 
         {/* ---------------------- SUBMIT ------------------------ */}
         <Button
-          label={"Login"}
+          label={"Entrar"}
           type="submit"
           className="btn-primary w-full"
           disabled={isSubmitting}

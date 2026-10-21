@@ -38,7 +38,7 @@ export class UserService {
     const user = await this.userRepository.findUserById(uuid);
 
     if (!user) {
-      throw new AppError("User not found", 404, "NOT_FOUND");
+      throw new AppError("Usuário não encontrado", 404, "NOT_FOUND");
     }
 
     return { user, message: "User Retrieved Successfully" };
@@ -69,7 +69,7 @@ export class UserService {
 
     // Verifica duplicidade
     if (await this.userPolicy.isDuplicateUser(user.email, user.cpf)) {
-      throw new AppError("User already exists", 409, "DUPLICATE_USER");
+      throw new AppError("Este usuário já está cadastrado", 409, "DUPLICATE_USER");
     }
 
     // Cria usuário
@@ -94,7 +94,7 @@ export class UserService {
     const user = await this.userRepository.findUserById(id);
 
     if (!user) {
-      throw new AppError("User not found", 404, "NOT_FOUND");
+      throw new AppError("Usuário não encontrado", 404, "NOT_FOUND");
     }
 
     if (!this.userPolicy.isValidRole(data.role)) {
@@ -111,7 +111,7 @@ export class UserService {
     }
 
     if (await this.userPolicy.isDuplicateUser(data.email, null, id)) {
-      throw new AppError("User already exists", 409, "DUPLICATE_USER");
+      throw new AppError("Este usuário já está cadastrado", 409, "DUPLICATE_USER");
     }
 
     // Atualiza campos
@@ -161,7 +161,7 @@ export class UserService {
     const user = await this.userRepository.findUserById(uuid);
 
     if (!user) {
-      throw new AppError("User not found", 404, "NOT_FOUND");
+      throw new AppError("Usuário não encontrado", 404, "NOT_FOUND");
     }
 
     if (uuid === actorUuid) throw new AppError("Você não pode excluir o próprio usuário", 409, "SELF_DELETE");
@@ -172,7 +172,7 @@ export class UserService {
     await this.userRepository.deleteUser(uuid);
 
     return {
-      message: "user deleted successfully",
+      message: "Usuário excluído com sucesso",
       user: user,
     };
   }
@@ -186,14 +186,14 @@ export class UserService {
     const user = await this.userRepository.findUserById(uuid);
 
     if (!user) {
-      throw new AppError("User not found", 404, "NOT_FOUND");
+      throw new AppError("Usuário não encontrado", 404, "NOT_FOUND");
     }
 
     const valid =
       user.passwordHash && (await bcrypt.compare(oldPassword, user.passwordHash));
 
     if (!valid) {
-      throw new AppError("Old Password Inválid", 401, "UNAUTHORIZED");
+      throw new AppError("A senha atual está incorreta", 401, "UNAUTHORIZED");
     }
 
     const hashPassword = await bcrypt.hash(newPassword, 10);
@@ -203,7 +203,7 @@ export class UserService {
     if (this.sessions) await this.sessions.revokeAllForUser(uuid);
 
     return {
-      message: "Password succefull altered",
+      message: "Senha alterada com sucesso",
     };
   }
 }

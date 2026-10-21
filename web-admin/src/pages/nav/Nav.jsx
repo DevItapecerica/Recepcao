@@ -6,7 +6,7 @@ import { useAuth } from "@/context/auth/AuthContext";
 import { useProfile } from "@/context/profile/ProfileContext";
 
 const adminItems = [
-  ["Dashboard", "/Admin", ["user", "recepcionist", "admin", "superadmin"]], ["Visitantes", "/Admin/Visitors", ["user", "recepcionist", "admin", "superadmin"]],
+  ["Painel", "/Admin", ["user", "recepcionist", "admin", "superadmin"]], ["Visitantes", "/Admin/Visitors", ["user", "recepcionist", "admin", "superadmin"]],
   ["Usuários", "/Admin/Users", ["admin", "superadmin"]], ["Visitas", "/Admin/Visits", ["user", "recepcionist", "admin", "superadmin"]],
   ["Configurações", "/Admin/Configurations", ["user", "recepcionist", "admin", "superadmin"]],
 ];

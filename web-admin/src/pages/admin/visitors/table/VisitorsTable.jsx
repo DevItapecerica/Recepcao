@@ -6,12 +6,40 @@ import { InputText } from "primereact/inputtext";
 import { Paginator } from "primereact/paginator";
 import { Image } from "primereact/image";
 import { Tag } from "primereact/tag";
+import { Calendar } from "primereact/calendar";
 
 import { useToast } from "@Context/toast/ToastContext";
 
 import TableHeader from "@/components/table/TableHeader";
 import { useVisitorsQuery } from "@/hooks/queries/useVisitors";
 import { useDebounce } from "@/hooks/useDebounce";
+import { getVisitor } from "@Service/Visitor";
+
+const escapeHtml = (value = "") => String(value).replace(/[&<>"']/g, (char) => ({
+  "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+}[char]));
+
+const toLocalDateValue = (date) => date
+  ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
+  : "";
+
+const printVisitors = (items, title) => {
+  const printWindow = window.open("", "_blank", "width=900,height=700");
+  if (!printWindow) return;
+  const cards = items.map((visitor) => `
+    <article><div class="visitor"><img class="photo" src="${escapeHtml(visitor.photo || "/placeholder.png")}" alt="Foto de ${escapeHtml(visitor.name)}" onerror="this.style.display='none'"/><div><h2>${escapeHtml(visitor.name)}</h2>
+      <p><b>CPF:</b> ${escapeHtml(visitor.cpf)}</p><p><b>E-mail:</b> ${escapeHtml(visitor.email || "—")}</p>
+      <p><b>Telefone:</b> ${escapeHtml(visitor.phone || "—")}</p>
+      <p><b>Endereço:</b> ${escapeHtml([visitor.address, visitor.city, visitor.state, visitor.zipCode].filter(Boolean).join(", ") || "—")}</p>
+      <p><b>Cadastrado em:</b> ${visitor.createdAt ? new Date(visitor.createdAt).toLocaleDateString("pt-BR") : "—"}</p></div></div></article>`).join("");
+  printWindow.document.write(`<!doctype html><html><head><title>${escapeHtml(title)}</title><style>
+    body{font:14px Arial,sans-serif;color:#111;margin:24px}h1{font-size:20px}article{border:1px solid #bbb;border-radius:6px;padding:12px 16px;margin:12px 0;break-inside:avoid}.visitor{display:flex;gap:16px;align-items:flex-start}.photo{width:105px;height:125px;object-fit:cover;border-radius:4px}h2{font-size:17px;margin:0 0 8px}p{margin:5px 0}@media print{body{margin:12mm}}
+    </style></head><body><h1>${escapeHtml(title)}</h1>${cards || "<p>Nenhum visitante encontrado.</p>"}</body></html>`);
+  printWindow.document.close();
+  printWindow.focus();
+  Promise.all(Array.from(printWindow.document.images, (image) => image.decode().catch(() => {})))
+    .then(() => { printWindow.focus(); printWindow.print(); });
+};
 
 // 1. Receba o novo prop "setDetailsIsVisible"
 const VisitorsView = ({
@@ -27,6 +55,8 @@ const VisitorsView = ({
     limit: 10,
     search: null,
   });
+  const [printFrom, setPrintFrom] = useState("");
+  const [printTo, setPrintTo] = useState("");
 
   const search = useDebounce(query.search);
   const { data, isPending, isFetching, error } = useVisitorsQuery({
@@ -98,6 +128,13 @@ const VisitorsView = ({
         <div className="flex gap-2">
           {/* 3. Adicione o botão de detalhes */}
           <Button
+            icon="pi pi-print"
+            className="p-button-rounded p-button-text"
+            onClick={() => printVisitors([data], `Ficha de visitante: ${data.name}`)}
+            tooltip="Imprimir visitante"
+            tooltipOptions={{ position: "top" }}
+          />
+          <Button
             icon="pi pi-list"
             className="p-button-rounded p-button-text"
             onClick={showDetails}
@@ -147,11 +184,36 @@ const VisitorsView = ({
 
       <TableHeader
         end={
-          <div className="md:flex items-center gap-2">
+          <div className="md:flex items-end gap-3">
+            <div className="flex flex-col gap-2">
+              <small className="text-gray-600">Imprima visitantes cadastrados no período escolhido:</small>
+              <div className="flex items-center gap-2">
+                <Calendar value={printFrom ? new Date(`${printFrom}T12:00:00`) : null} onChange={(e) => setPrintFrom(toLocalDateValue(e.value))} placeholder="Data inicial" aria-label="Data inicial para impressão" showIcon readOnlyInput dateFormat="dd/mm/yy" />
+                <Calendar value={printTo ? new Date(`${printTo}T12:00:00`) : null} onChange={(e) => setPrintTo(toLocalDateValue(e.value))} placeholder="Data final" aria-label="Data final para impressão" showIcon readOnlyInput dateFormat="dd/mm/yy" />
+              <Button label="Imprimir período" icon="pi pi-print" severity="secondary" disabled={!printFrom || !printTo || printFrom > printTo} onClick={async () => {
+                try {
+                  const first = await getVisitor(0, 100, query.search);
+                  let all = first.visitor || [];
+                  const pages = Math.ceil((first.count || 0) / 100);
+                  for (let page = 1; page < pages; page += 1) {
+                    const result = await getVisitor(page, 100, query.search);
+                    all = all.concat(result.visitor || []);
+                  }
+                  const filtered = all.filter((visitor) => {
+                    const day = new Date(visitor.createdAt).toLocaleDateString("en-CA");
+                    return day >= printFrom && day <= printTo;
+                  });
+                  printVisitors(filtered, `Visitantes cadastrados de ${new Date(`${printFrom}T12:00:00`).toLocaleDateString("pt-BR")} a ${new Date(`${printTo}T12:00:00`).toLocaleDateString("pt-BR")}`);
+                } catch (printError) {
+                  showToast("error", "Erro", printError.response?.data?.message || printError.message);
+                }
+              }} />
+              </div>
+            </div>
             <Button
               label="Novo visitante"
               icon="pi pi-user-plus"
-              className="btn-primary"
+              className="btn-primary self-end px-5 py-3 text-base"
               onClick={() => setEditIsVisible(true)}
             />
           </div>

@@ -12,7 +12,7 @@ const VisitorsDeleteModal = ({ visible, onHide, visitorTarget, setVisitorTarget 
   const onConfirm = async () => {
     try {
       const { message } = await deleteMutation.mutateAsync(visitorTarget.uuid);
-      showToast("success", "Sucesso", message || "Deleted successfully");
+      showToast("success", "Sucesso", message || "Visitante excluído com sucesso");
 
       handleClose();
     } catch (error) {
@@ -33,7 +33,7 @@ const VisitorsDeleteModal = ({ visible, onHide, visitorTarget, setVisitorTarget 
   const header = (
     <div className="flex items-center gap-3">
       <i className="pi pi-trash text-2xl text-red-500" />
-      <span className="text-xl font-bold text-red-500">Delete User?</span>
+      <span className="text-xl font-bold text-red-500">Excluir visitante?</span>
     </div>
   );
 
@@ -48,7 +48,7 @@ const VisitorsDeleteModal = ({ visible, onHide, visitorTarget, setVisitorTarget 
     >
       <div className="mb-4">
         <p>
-          Are you sure you want to delete the Visitor{" "}
+          Tem certeza de que deseja excluir o visitante{" "}
           <b>{visitorTarget?.name}</b>?
         </p>
       </div>

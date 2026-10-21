@@ -88,7 +88,7 @@ export default function Dashboard() {
     <section className="flex flex-col gap-6">
       <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-font-secondary">Dashboard</h1>
+          <h1 className="text-3xl font-bold text-font-secondary">Painel de visitas</h1>
           <p className="text-sm">Resumo mensal do movimento da recepção</p>
         </div>
         <label className="flex flex-col gap-1 text-sm font-medium">

@@ -16,11 +16,11 @@ import { useResendUserActivation } from "@/hooks/queries/useUsers";
 import { useProfile } from "@Context/profile/ProfileContext";
 
 const columns = [
-  { field: "first_name", header: "First Name" },
-  { field: "last_name", header: "Last Name" },
-  { field: "username", header: "Username" },
-  { field: "email", header: "Email" },
-  { field: "role", header: "Role" },
+  { field: "first_name", header: "Nome" },
+  { field: "last_name", header: "Sobrenome" },
+  { field: "username", header: "Usuário" },
+  { field: "email", header: "E-mail" },
+  { field: "role", header: "Perfil" },
 ];
 
 const UserTable = ({ setEditIsVisible, setUserTarget }) => {
@@ -99,9 +99,9 @@ const UserTable = ({ setEditIsVisible, setUserTarget }) => {
       ></TableHeader>
       <DataTable value={users} lazy paginator first={query.page * query.limit} rows={query.limit} totalRecords={totalUsers} rowsPerPageOptions={[10, 20, 30]} onPage={(e) => setQuery((prev) => ({ ...prev, page: e.page, limit: e.rows }))} scrollable tableStyle={{ minWidth: "64rem" }} stripedRows loading={isPending || isFetching} emptyMessage="Nenhum usuário encontrado.">
         {columns.map((col, index) => (
-          <Column key={index} field={col.field} header={col.header} />
+        <Column key={index} field={col.field} header={col.header} body={col.field === "role" ? (row) => ({ admin: "Administrador", user: "Usuário", recepcionist: "Recepcionista", superadmin: "Superadministrador" }[row.role] || row.role) : undefined} />
         ))}
-        <Column header="Actions" body={(rowData) => ActionsFields(rowData)} />
+        <Column header="Ações" body={(rowData) => ActionsFields(rowData)} />
       </DataTable>
     </section>
   );
