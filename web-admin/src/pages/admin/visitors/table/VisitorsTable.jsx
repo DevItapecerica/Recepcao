@@ -13,6 +13,7 @@ import { useToast } from "@Context/toast/ToastContext";
 import TableHeader from "@/components/table/TableHeader";
 import { useVisitorsQuery } from "@/hooks/queries/useVisitors";
 import { useDebounce } from "@/hooks/useDebounce";
+<<<<<<< HEAD
 import { getVisitor } from "@Service/Visitor";
 
 const escapeHtml = (value = "") => String(value).replace(/[&<>"']/g, (char) => ({
@@ -39,13 +40,62 @@ const printVisitors = (items, title) => {
   printWindow.focus();
   Promise.all(Array.from(printWindow.document.images, (image) => image.decode().catch(() => {})))
     .then(() => { printWindow.focus(); printWindow.print(); });
+=======
+import { useVisitorOccurrenceStatusQuery } from "@/hooks/queries/useOccurrences";
+
+
+const OccurrenceStatusDot = ({ visitorUuid }) => {
+  const { data, isLoading, isError } = useVisitorOccurrenceStatusQuery(
+    visitorUuid,
+    true,
+  );
+
+  if (isLoading || isError || !data) return null;
+
+  const points = Number(data.points ?? 0);
+
+  const color =
+    points >= 15
+      ? "bg-red-500"
+      : points >= 8
+        ? "bg-yellow-0"
+        : "bg-green-500";
+
+  const status =
+    points >= 15
+      ? { label: "Perigoso", severity: "danger" }
+      : points >= 8
+        ? { label: "Atenção", severity: "warning" }
+        : { label: "Seguro", severity: "success" };
+
+  return (
+     <span className="inline-flex items-center gap-2">
+    <span
+      className={`w-2.5 h-2.5 rounded-full shrink-0 ${color}`}
+      title={`${points} pontos nos últimos 6 meses`}
+    />
+
+    <span
+      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
+        points >= 15
+          ? "bg-red-200 text-red-600"
+          : points >= 8
+            ? "bg-yellow-200 text-yellow-600"
+            : "bg-green-200 text-green-600"
+      }`}
+    >
+      {status.label}
+    </span>
+  </span>
+  );
+>>>>>>> 480f7af280dd08aecf4db225f8f300d267273494
 };
 
-// 1. Receba o novo prop "setDetailsIsVisible"
 const VisitorsView = ({
   setEditIsVisible,
   setExcludeIsVisible,
   setDetailsIsVisible,
+  setOccurrenceIsVisible,
   setVisitorTarget,
 }) => {
   const { showToast } = useToast();
@@ -81,6 +131,11 @@ const VisitorsView = ({
       setEditIsVisible(true);
     };
 
+    const showOccurrences = () => {
+      setVisitorTarget(data);
+      setOccurrenceIsVisible(true);
+    };
+
     const toExclude = () => {
       setVisitorTarget(data);
       setExcludeIsVisible(true);
@@ -92,35 +147,26 @@ const VisitorsView = ({
       setDetailsIsVisible(true);
     };
 
-    const WarringField = (data) => {
-      switch (data.warring) {
-        case "secure":
-          return <Tag value={data.status} severity={"success"} />;
-        case "warning":
-          return <Tag value={data.status} severity={"warning"} />;
-        case "danger":
-          return <Tag value={data.status} severity={"danger"} />;
-        default:
-          return <Tag value={"unknow"} severity={"info"} />;
-      }
-    };
-
     return (
       <div className="flex items-center gap-4 border-b border-border bg-surface p-4 last:border-b-0">
         <span>
           <Image
             src={data.photo ? `${data.photo}` : "/placeholder.png"}
-            alt="visitor"
+            alt="Foto do visitante"
             className="w-20 max-h-24 rounded-md  overflow-hidden"
             preview
           />
         </span>
         <div className="flex-1">
-          <h4 className="font-semibold text-lg">
-            {data.name} <span className="ml-3">{WarringField(data)}</span>
+        <h4 className="font-semibold text-lg flex flex-wrap items-center gap-2">
+              <span>{data.name}</span>
+
+            <OccurrenceStatusDot visitorUuid={data.uuid} />
           </h4>
+
           <p className="text-sm text-gray-600">{data.email}</p>
           <p className="text-sm text-gray-600">{data.phone}</p>
+
           <p className="text-xs text-gray-400">
             Criado em: {new Date(data.createdAt).toLocaleDateString("pt-BR")}
           </p>
@@ -141,6 +187,15 @@ const VisitorsView = ({
             tooltip="Ver Histórico"
             tooltipOptions={{ position: "top" }}
           />
+
+          <Button
+            icon="pi pi-exclamation-triangle"
+            className="p-button-rounded p-button-text"
+            onClick={showOccurrences}
+            tooltip="Ocorrências"
+            tooltipOptions={{ position: "top" }}
+          />
+
           <Button
             icon="pi pi-pencil"
             className="p-button-rounded p-button-text"
@@ -148,6 +203,7 @@ const VisitorsView = ({
             tooltip="Editar"
             tooltipOptions={{ position: "top" }}
           />
+
           <Button
             icon="pi pi-trash"
             className="p-button-rounded p-button-text p-button-danger"

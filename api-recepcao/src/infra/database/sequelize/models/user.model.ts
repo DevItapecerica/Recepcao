@@ -83,12 +83,19 @@ export default (sequelize: Sequelize, dataTypes: typeof DataTypes) => {
   );
 
   (UserDB as any).associate = (models: any) => {
-    UserDB.hasMany(models.VisitsModel, {
-      foreignKey: "creator_uuid",
-      as: "CreatedVisits",
-      onDelete: "CASCADE",
-    });
-  };
+  // Relacionamento existente com visitas
+  UserDB.hasMany(models.VisitsModel, {
+    foreignKey: "creator_uuid",
+    as: "CreatedVisits",
+    onDelete: "CASCADE",
+  });
 
+  // Novo relacionamento com ocorrências registradas
+  UserDB.hasMany(models.OccurrenceRecordModel, {
+    foreignKey: "creator_uuid",
+    as: "CreatedOccurrences",
+    onDelete: "RESTRICT",
+  });
+};
   return UserDB;
 };

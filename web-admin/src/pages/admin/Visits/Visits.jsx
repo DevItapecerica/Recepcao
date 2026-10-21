@@ -107,7 +107,11 @@ export default function VisitsTable() {
           />
           <Column
             field="createdAt"
+<<<<<<< HEAD
             header="Data e horário"
+=======
+            header="Data e Hora"
+>>>>>>> 480f7af280dd08aecf4db225f8f300d267273494
             body={(rowData) => (
               <span>{format(rowData.date, "dd/MM/yyyy HH:mm")}</span>
             )}

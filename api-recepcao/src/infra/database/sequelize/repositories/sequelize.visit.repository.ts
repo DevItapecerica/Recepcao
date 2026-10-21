@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { fn, col, literal, Op } from "sequelize";
+=======
+import { fn, col, Op, literal} from "sequelize";
+>>>>>>> 480f7af280dd08aecf4db225f8f300d267273494
 import {
   IVisitRepository,
   VisitDashboardOptions,
@@ -12,6 +16,7 @@ import db from "../index.js";
 import { Visits } from "../models/visits.model.js";
 import { Visit } from "../../../../domain/entities/Visit.js";
 import { UserDB } from "../models/user.model.js";
+
 import { Visitors } from "../models/visitors.model.js";
 import { User } from "../../../../domain/entities/User.js";
 import { Visitor } from "../../../../domain/entities/Visitor.js";
@@ -183,13 +188,32 @@ export class SequelizeVisitRepository implements IVisitRepository {
     };
   }
 
+<<<<<<< HEAD
   private parseVisitDate(value: string): Date {
     const normalized = value.replace(" ", "T");
     // ISO timestamps with Z/offset are absolute instants from the browser. Keep
     // their timezone; only legacy/local values need São Paulo's UTC-3 offset.
     if (/(Z|[+-]\d{2}:\d{2})$/i.test(normalized)) return new Date(normalized);
     return new Date(`${normalized}-03:00`);
+=======
+  
+private parseVisitDate(value: string): Date {
+  const normalized = value.trim().replace(" ", "T");
+
+  const hasTimezone = /(?:Z|[+-]\d{2}:\d{2})$/i.test(normalized);
+
+  const parsedDate = new Date(
+    hasTimezone ? normalized : `${normalized}-03:00`
+  );
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    throw new Error("Data e hora da visita inválidas");
+>>>>>>> 480f7af280dd08aecf4db225f8f300d267273494
   }
+
+  return parsedDate;
+}
+
 }
 
 export const visitRepository = new SequelizeVisitRepository();

@@ -49,7 +49,7 @@ export class VisitController {
       creator_uuid: request.user.uuid,
       visitor_uuid: request.body.visitor_uuid,
       subject: request.body.subject,
-      date: request.body.date.replace("T", " "),
+date: request.body.date,
     });
 
     reply.status(201).send({ message: result.message, visits: result.visits });

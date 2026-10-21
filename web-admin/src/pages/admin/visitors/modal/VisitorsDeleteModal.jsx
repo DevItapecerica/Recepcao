@@ -1,3 +1,4 @@
+
 import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
 import { useToast } from "@Context/toast/ToastContext";
@@ -5,14 +6,18 @@ import { useDeleteVisitor } from "@/hooks/queries/useVisitors";
 
 const VisitorsDeleteModal = ({ visible, onHide, visitorTarget, setVisitorTarget }) => {
   const { showToast } = useToast();
-  // Context to manage user data
+  // Contexto para gerenciar dados do usuário
   const deleteMutation = useDeleteVisitor();
 
   // Submissão do formulário
   const onConfirm = async () => {
     try {
       const { message } = await deleteMutation.mutateAsync(visitorTarget.uuid);
+<<<<<<< HEAD
       showToast("success", "Sucesso", message || "Visitante excluído com sucesso");
+=======
+      showToast("success", "Sucesso", message || "Excluído com sucesso");
+>>>>>>> 480f7af280dd08aecf4db225f8f300d267273494
 
       handleClose();
     } catch (error) {

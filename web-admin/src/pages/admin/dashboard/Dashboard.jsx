@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Avatar } from "primereact/avatar";
 import { ProgressSpinner } from "primereact/progressspinner";
@@ -88,7 +89,11 @@ export default function Dashboard() {
     <section className="flex flex-col gap-6">
       <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
+<<<<<<< HEAD
           <h1 className="text-3xl font-bold text-font-secondary">Painel de visitas</h1>
+=======
+          <h1 className="text-3xl font-bold text-font-secondary">Painel de controle</h1>
+>>>>>>> 480f7af280dd08aecf4db225f8f300d267273494
           <p className="text-sm">Resumo mensal do movimento da recepção</p>
         </div>
         <label className="flex flex-col gap-1 text-sm font-medium">
@@ -105,7 +110,7 @@ export default function Dashboard() {
 
       {loading ? (
         <div className="min-h-80 flex items-center justify-center">
-          <ProgressSpinner aria-label="Carregando dashboard" />
+          <ProgressSpinner aria-label="Carregando painel de controle" />
         </div>
       ) : (
         <>
