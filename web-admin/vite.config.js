@@ -27,15 +27,6 @@ export default defineConfig({
     },
   },
   server: {
-<<<<<<< HEAD
-  host: "0.0.0.0", //Acesso externo
-  port: 5173,
-  proxy: {
-    "/api/v1": {
-      target: "http://localhost:3000",
-      changeOrigin: false,
-      secure: false,
-=======
     host: "0.0.0.0", //Acesso externo
     port: 5173,
     proxy: {
@@ -44,8 +35,6 @@ export default defineConfig({
         changeOrigin: false,
         secure: false,
       },
->>>>>>> 480f7af280dd08aecf4db225f8f300d267273494
     },
   },
-},
 });

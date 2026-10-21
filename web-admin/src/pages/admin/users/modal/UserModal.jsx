@@ -11,11 +11,7 @@ import { useSaveUser } from "@/hooks/queries/useUsers";
 import { useProfile } from "@Context/profile/ProfileContext";
 
 const rolesOption = [
-<<<<<<< HEAD
-  { label: "Admin", value: "admin" },
-=======
   { label: "Administrador", value: "admin" },
->>>>>>> 480f7af280dd08aecf4db225f8f300d267273494
   { label: "Usuário", value: "user" },
   { label: "Recepcionista", value: "recepcionist" },
   { label: "Superadministrador", value: "superadmin" },
@@ -130,11 +126,7 @@ const UserModal = ({ visible, onHide, userTarget, setUserTarget }) => {
           <Controller
             name="role"
             control={control}
-<<<<<<< HEAD
-            rules={{ required: "Selecione um perfil" }}
-=======
             rules={{ required: "Campo obrigatório" }}
->>>>>>> 480f7af280dd08aecf4db225f8f300d267273494
             render={({ field }) => (
               <Dropdown
                 {...field}
@@ -157,11 +149,7 @@ const UserModal = ({ visible, onHide, userTarget, setUserTarget }) => {
           <label className="font-medium">E-mail</label>
           <InputText
             type="email"
-<<<<<<< HEAD
-            {...register("email", { required: "Informe o e-mail" })}
-=======
             {...register("email", { required: "Campo obrigatório" })}
->>>>>>> 480f7af280dd08aecf4db225f8f300d267273494
           />
           {errors.email && (
             <small className="text-red-500">{errors.email.message}</small>
@@ -174,11 +162,7 @@ const UserModal = ({ visible, onHide, userTarget, setUserTarget }) => {
           <Controller
             name="cpf"
             control={control}
-<<<<<<< HEAD
-            rules={{ required: !userTarget ? "Informe o CPF" : false }}
-=======
             rules={{ required: !userTarget ? "Campo obrigatório" : false }}
->>>>>>> 480f7af280dd08aecf4db225f8f300d267273494
             render={({ field }) => (
               <InputMask
                 {...field}

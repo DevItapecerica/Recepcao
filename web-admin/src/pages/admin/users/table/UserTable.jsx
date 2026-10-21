@@ -19,15 +19,9 @@ import { useProfile } from "@Context/profile/ProfileContext";
 const columns = [
   { field: "first_name", header: "Nome" },
   { field: "last_name", header: "Sobrenome" },
-<<<<<<< HEAD
-  { field: "username", header: "Usuário" },
-  { field: "email", header: "E-mail" },
-  { field: "role", header: "Perfil" },
-=======
   { field: "username", header: "Nome de usuário" },
   { field: "email", header: "E-mail" },
   { field: "role", header: "Função" },
->>>>>>> 480f7af280dd08aecf4db225f8f300d267273494
 ];
 
 const UserTable = ({ setEditIsVisible, setUserTarget }) => {
@@ -113,16 +107,12 @@ const UserTable = ({ setEditIsVisible, setUserTarget }) => {
       ></TableHeader>
       <DataTable value={users} lazy paginator first={query.page * query.limit} rows={query.limit} totalRecords={totalUsers} rowsPerPageOptions={[10, 20, 30]} onPage={(e) => setQuery((prev) => ({ ...prev, page: e.page, limit: e.rows }))} scrollable tableStyle={{ minWidth: "64rem" }} stripedRows loading={isPending || isFetching} emptyMessage="Nenhum usuário encontrado.">
         {columns.map((col, index) => (
-<<<<<<< HEAD
-        <Column key={index} field={col.field} header={col.header} body={col.field === "role" ? (row) => ({ admin: "Administrador", user: "Usuário", recepcionist: "Recepcionista", superadmin: "Superadministrador" }[row.role] || row.role) : undefined} />
-=======
           <Column
             key={index}
             field={col.field}
             header={col.header}
             body={col.field === "role" ? (rowData) => roleLabels[rowData.role] || rowData.role : undefined}
           />
->>>>>>> 480f7af280dd08aecf4db225f8f300d267273494
         ))}
         <Column header="Ações" body={(rowData) => ActionsFields(rowData)} />
       </DataTable>

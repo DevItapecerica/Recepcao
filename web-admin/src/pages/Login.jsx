@@ -65,11 +65,7 @@ export default function Login() {
             rules={{ required: "Usuário obrigatório" }}
             render={({ field }) => (
               <InputText
-<<<<<<< HEAD
-                placeholder="Usuário"
-=======
                 placeholder="Nome de usuário"
->>>>>>> 480f7af280dd08aecf4db225f8f300d267273494
                 className={errors.username ? "p-invalid flex-1" : "flex-1"}
                 {...field}
               />

@@ -5,7 +5,6 @@ import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { Paginator } from "primereact/paginator";
 import { Image } from "primereact/image";
-import { Tag } from "primereact/tag";
 import { Calendar } from "primereact/calendar";
 
 import { useToast } from "@Context/toast/ToastContext";
@@ -13,7 +12,7 @@ import { useToast } from "@Context/toast/ToastContext";
 import TableHeader from "@/components/table/TableHeader";
 import { useVisitorsQuery } from "@/hooks/queries/useVisitors";
 import { useDebounce } from "@/hooks/useDebounce";
-<<<<<<< HEAD
+import { useVisitorOccurrenceStatusQuery } from "@/hooks/queries/useOccurrences";
 import { getVisitor } from "@Service/Visitor";
 
 const escapeHtml = (value = "") => String(value).replace(/[&<>"']/g, (char) => ({
@@ -29,7 +28,7 @@ const printVisitors = (items, title) => {
   if (!printWindow) return;
   const cards = items.map((visitor) => `
     <article><div class="visitor"><img class="photo" src="${escapeHtml(visitor.photo || "/placeholder.png")}" alt="Foto de ${escapeHtml(visitor.name)}" onerror="this.style.display='none'"/><div><h2>${escapeHtml(visitor.name)}</h2>
-      <p><b>CPF:</b> ${escapeHtml(visitor.cpf)}</p><p><b>E-mail:</b> ${escapeHtml(visitor.email || "—")}</p>
+      <p><b>E-mail:</b> ${escapeHtml(visitor.email || "—")}</p>
       <p><b>Telefone:</b> ${escapeHtml(visitor.phone || "—")}</p>
       <p><b>Endereço:</b> ${escapeHtml([visitor.address, visitor.city, visitor.state, visitor.zipCode].filter(Boolean).join(", ") || "—")}</p>
       <p><b>Cadastrado em:</b> ${visitor.createdAt ? new Date(visitor.createdAt).toLocaleDateString("pt-BR") : "—"}</p></div></div></article>`).join("");
@@ -38,11 +37,10 @@ const printVisitors = (items, title) => {
     </style></head><body><h1>${escapeHtml(title)}</h1>${cards || "<p>Nenhum visitante encontrado.</p>"}</body></html>`);
   printWindow.document.close();
   printWindow.focus();
+  printWindow.onafterprint = () => printWindow.close();
   Promise.all(Array.from(printWindow.document.images, (image) => image.decode().catch(() => {})))
     .then(() => { printWindow.focus(); printWindow.print(); });
-=======
-import { useVisitorOccurrenceStatusQuery } from "@/hooks/queries/useOccurrences";
-
+};
 
 const OccurrenceStatusDot = ({ visitorUuid }) => {
   const { data, isLoading, isError } = useVisitorOccurrenceStatusQuery(
@@ -58,7 +56,7 @@ const OccurrenceStatusDot = ({ visitorUuid }) => {
     points >= 15
       ? "bg-red-500"
       : points >= 8
-        ? "bg-yellow-0"
+        ? "bg-yellow-500"
         : "bg-green-500";
 
   const status =
@@ -88,7 +86,6 @@ const OccurrenceStatusDot = ({ visitorUuid }) => {
     </span>
   </span>
   );
->>>>>>> 480f7af280dd08aecf4db225f8f300d267273494
 };
 
 const VisitorsView = ({
@@ -246,7 +243,7 @@ const VisitorsView = ({
               <div className="flex items-center gap-2">
                 <Calendar value={printFrom ? new Date(`${printFrom}T12:00:00`) : null} onChange={(e) => setPrintFrom(toLocalDateValue(e.value))} placeholder="Data inicial" aria-label="Data inicial para impressão" showIcon readOnlyInput dateFormat="dd/mm/yy" />
                 <Calendar value={printTo ? new Date(`${printTo}T12:00:00`) : null} onChange={(e) => setPrintTo(toLocalDateValue(e.value))} placeholder="Data final" aria-label="Data final para impressão" showIcon readOnlyInput dateFormat="dd/mm/yy" />
-              <Button label="Imprimir período" icon="pi pi-print" severity="secondary" disabled={!printFrom || !printTo || printFrom > printTo} onClick={async () => {
+              <Button label="Imprimir período" icon="pi pi-print" severity="secondary" className="h-12 px-5 text-base whitespace-nowrap" disabled={!printFrom || !printTo || printFrom > printTo} onClick={async () => {
                 try {
                   const first = await getVisitor(0, 100, query.search);
                   let all = first.visitor || [];
@@ -269,7 +266,7 @@ const VisitorsView = ({
             <Button
               label="Novo visitante"
               icon="pi pi-user-plus"
-              className="btn-primary self-end px-5 py-3 text-base"
+              className="btn-primary self-end h-12 px-5 text-base whitespace-nowrap"
               onClick={() => setEditIsVisible(true)}
             />
           </div>

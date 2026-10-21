@@ -13,11 +13,7 @@ const VisitorsDeleteModal = ({ visible, onHide, visitorTarget, setVisitorTarget 
   const onConfirm = async () => {
     try {
       const { message } = await deleteMutation.mutateAsync(visitorTarget.uuid);
-<<<<<<< HEAD
-      showToast("success", "Sucesso", message || "Visitante excluído com sucesso");
-=======
       showToast("success", "Sucesso", message || "Excluído com sucesso");
->>>>>>> 480f7af280dd08aecf4db225f8f300d267273494
 
       handleClose();
     } catch (error) {
