@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+
+import { useCallback, useRef, useState } from "react";
 import { FileUpload } from "primereact/fileupload";
 import { ProgressBar } from "primereact/progressbar";
 import { Tag } from "primereact/tag";
@@ -15,7 +16,7 @@ export default function UploadFile({ setPhotoBase64, photo }) {
     const imageSrc = webcamRef.current.getScreenshot();
     setPhotoBase64(imageSrc);
     setShowWebcam(false);
-  }, [webcamRef]);
+  }, [setPhotoBase64]);
 
   const onTemplateSelect = (e) => {
     let _totalSize = totalSize;
@@ -80,7 +81,7 @@ export default function UploadFile({ setPhotoBase64, photo }) {
         </div>
         <span className="flex flex-column text-left ml-3">
           {file.name}
-          <small>{new Date().toLocaleDateString()}</small>
+          <small>{new Date().toLocaleDateString("pt-BR")}</small>
         </span>
         <Tag
           value={props.formatSize}
@@ -94,10 +95,10 @@ export default function UploadFile({ setPhotoBase64, photo }) {
   const emptyTemplate = () => {
     return (
       <div className="flex flex-col align-items-center h-50 relative">
-        <p className="z-10 text-center w-full mb-5">Drag and Drop Image Here</p>
+        <p className="z-10 text-center w-full mb-5">Arraste e solte uma imagem aqui</p>
         <div className="flex justify-center items-center w-full bg-gray-100 overflow-hidden">
           {photo ? (
-            <img src={photo} alt="Visitor" className="object-cover w-full" />
+            <img src={photo} alt="Visitante" className="object-cover w-full" />
           ) : (
             <i className="pi pi-image mt-3 p-5 bg-gray-100 text-7xl"></i>
           )}
@@ -140,7 +141,7 @@ export default function UploadFile({ setPhotoBase64, photo }) {
         cancelOptions={cancelOptions}
       />
 
-      {/* Webcam Modal */}
+      {/* Modal da câmera */}
       {showWebcam && (
         <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex justify-center items-center flex-col gap-4 p-4">
           <Webcam

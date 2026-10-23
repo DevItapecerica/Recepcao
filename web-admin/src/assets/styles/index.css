@@ -1,1 +1,88 @@
-@import "./main.css";
+@import "@fontsource/roboto/400.css";
+@import "@fontsource/roboto/500.css";
+@import "@fontsource/roboto/700.css";
+@layer primereact, tailwind-utilities;
+@import "primereact/resources/themes/lara-light-indigo/theme.css"
+  layer(primereact);
+@import "tailwindcss/theme" layer(tailwind-utilities);
+@import "tailwindcss/utilities" layer(tailwind-utilities);
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@theme {
+  --color-background: #f6f8f9;
+  --color-content: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-muted: #eef3f4;
+  --color-border: #dce5e7;
+  --color-font-primary: #18272b;
+  --color-font-secondary: #24444b;
+  --color-muted: #61757a;
+  --color-primary: #176b78;
+  --color-primary-light: #238899;
+  --color-on-primary: #125763;
+  --color-on-surface: #e5eff1;
+  --color-success: #15805d;
+  --color-warning: #b56b09;
+  --color-danger: #c33b45;
+}
+
+[data-theme="dark"] {
+  --color-background: #10191c;
+  --color-content: #172327;
+  --color-surface: #1b292d;
+  --color-surface-muted: #223337;
+  --color-border: #31464b;
+  --color-font-primary: #edf5f6;
+  --color-font-secondary: #d8e8ea;
+  --color-muted: #9db0b4;
+  --color-primary: #45a9b7;
+  --color-primary-light: #328c99;
+  --color-on-primary: #5cbcc8;
+  --color-on-surface: #293d42;
+}
+
+* {
+  box-sizing: border-box;
+}
+html {
+  color-scheme: light;
+}
+html:has([data-theme="dark"]) {
+  color-scheme: dark;
+}
+body {
+  margin: 0;
+}
+#root {
+  min-height: 100dvh;
+  font-family: "Roboto", Arial, sans-serif;
+}
+#App {
+  min-height: 100dvh;
+  background: var(--color-background);
+  color: var(--color-font-primary);
+}
+
+:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-primary) 35%, transparent);
+  outline-offset: 2px;
+}
+.app-surface {
+  @apply rounded-xl border border-border bg-surface;
+}
+.btn-primary {
+  @apply border-0 rounded-lg bg-primary px-4 py-2 text-white hover:bg-on-primary transition-colors;
+}
+.btn-secondary {
+  @apply rounded-lg border border-border bg-surface px-4 py-2 text-font-primary hover:bg-surface-muted transition-colors;
+}
+.selected {
+  @apply bg-surface-muted text-primary;
+}
+.p-icon-field {
+  @apply w-full;
+}
+.p-image-preview-container > img {
+  @apply w-full;
+}

@@ -10,6 +10,13 @@ const __dirname = path.dirname(__filename);
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  test: {
+    environment: "jsdom",
+    setupFiles: "./src/test/setup.js",
+    globals: true,
+    environmentOptions: { jsdom: { url: "http://localhost:3000" } },
+    restoreMocks: true,
+  },
 
   resolve: {
     alias: {
@@ -24,7 +31,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       "/api/v1": {
-        target: "http://192.168.16.13:3000",
+        target: "http://localhost:3000",
         changeOrigin: false,
         secure: false,
       },

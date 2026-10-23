@@ -1,4 +1,4 @@
-import API from "@API/API";
+import API, { refreshAccessToken } from "@API/API";
 
 export const handdleLogin = async (username, password) => {
   const { data } = await API.post("/login", {
@@ -9,24 +9,31 @@ export const handdleLogin = async (username, password) => {
   return data;
 };
 
-export const validateToken = async () => {
-  const token = localStorage.getItem("token");
-
+export const validateToken = async (token) => {
   const { data } = await API.post("/login/verify", { token });
 
   return data;
 };
 
+export const refreshSession = async () => refreshAccessToken();
+
+export const logoutSession = async () => {
+  const { data } = await API.post("/login/logout");
+  return data;
+};
+
 export const alterPassword = async (req) => {
-const {old_password, new_password} = req
+  const { old_password, new_password } = req;
 
   const { data } = await API.post(
     "/login/alterpwd",
-    { old_password, new_password },
-    {
-      headers: { Authorization: localStorage.getItem("token") },
-    }
+    { old_password, new_password }
   );
 
+  return data;
+};
+
+export const activateAccount = async (token, password) => {
+  const { data } = await API.post("/login/activate", { token, password });
   return data;
 };

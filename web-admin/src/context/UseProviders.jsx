@@ -3,20 +3,21 @@ import ProfileProvider from "./profile/ProfileProvider";
 import ThemeProvider from "./theme/ThemeProvider";
 import { PrimeReactProvider } from "primereact/api";
 import { ToastProvider } from "./toast/ToastProvider";
-import { LoadingProvider } from "./loading/LoadingProvider";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "../queryClient";
 
 const UseProviders = ({ children }) => {
   return (
     <PrimeReactProvider>
-      <ThemeProvider>
-        <LoadingProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
           <ToastProvider>
-            <AuthProvider>
-              <ProfileProvider>{children}</ProfileProvider>
-            </AuthProvider>
+              <ProfileProvider>
+                <AuthProvider>{children}</AuthProvider>
+              </ProfileProvider>
           </ToastProvider>
-        </LoadingProvider>
-      </ThemeProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
     </PrimeReactProvider>
   );
 };

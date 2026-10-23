@@ -1,3 +1,4 @@
+
 import { useForm, Controller } from "react-hook-form";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
@@ -15,8 +16,9 @@ import { useToast } from "@Context/toast/ToastContext";
 export default function Login() {
   const { attImage, attUser } = useProfile();
   const { Login } = useAuth();
-  const Navigate = useNavigate();
+  const navigate = useNavigate();
   const { showToast } = useToast();
+
   /* ------------------------------------------------------------------ */
   const {
     control,
@@ -36,22 +38,22 @@ export default function Login() {
       Login(token);
       attUser(user);
       attImage(null);
-      Navigate("/Admin");
+      navigate("/Admin");
     } catch (error) {
-      showToast("error", "error", error.response?.data.message);
+      showToast("error", "Erro", error.response?.data?.message || error.message);
     }
   };
 
   /* ------------------------------------------------------------------ */
   return (
-    <div id="Login" className="flex justify-center items-center h-full w-full">
+    <main id="Login" className="mx-auto flex min-h-[calc(100dvh-8rem)] w-full max-w-md items-center px-4 py-10">
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="bg-window rounded-md p-4 shadow-2xl"
+        className="app-surface w-full p-6 sm:p-8"
       >
-        <h1 className="text-6xl text-center mb-4">Login</h1>
+        <div className="mb-7 text-center"><img src="/Brasao.png" alt="Brasão municipal" className="mx-auto mb-4 h-16 w-auto" /><h1 className="text-2xl font-bold text-font-primary">Acesso à Recepção</h1><p className="mt-1 text-sm text-muted">Prefeitura Municipal de Itapecerica da Serra</p></div>
 
-        {/* ---------------------- USERNAME ---------------------- */}
+        {/* NOME DE USUÁRIO */}
         <div className="p-inputgroup flex-1 mb-4">
           <span className="p-inputgroup-addon">
             <i className="pi pi-user" />
@@ -63,7 +65,7 @@ export default function Login() {
             rules={{ required: "Usuário obrigatório" }}
             render={({ field }) => (
               <InputText
-                placeholder="Username"
+                placeholder="Nome de usuário"
                 className={errors.username ? "p-invalid flex-1" : "flex-1"}
                 {...field}
               />
@@ -76,7 +78,7 @@ export default function Login() {
           </small>
         )}
 
-        {/* ---------------------- PASSWORD ---------------------- */}
+        {/* SENHA */}
         <div className="p-inputgroup flex-1 mb-6">
           <span className="p-inputgroup-addon">*</span>
 
@@ -91,7 +93,9 @@ export default function Login() {
               <Password
                 feedback={false}
                 toggleMask
-                className={errors.password ? "p-invalid w-full" : "w-full"}
+                className="w-full"
+                inputClassName={`w-full ${errors.password ? "p-invalid" : ""}`}
+                inputId="password"
                 {...field}
               />
             )}
@@ -103,14 +107,14 @@ export default function Login() {
           </small>
         )}
 
-        {/* ---------------------- SUBMIT ------------------------ */}
+        {/* ENTRAR */}
         <Button
-          label={"Login"}
+          label={"Entrar"}
           type="submit"
           className="btn-primary w-full"
           disabled={isSubmitting}
         />
       </form>
-    </div>
+    </main>
   );
 }

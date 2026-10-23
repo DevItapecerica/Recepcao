@@ -1,0 +1,205 @@
+import { FastifyInstance } from "fastify";
+import { VisitorController } from "../controller/visitors/visitorsController.js";
+
+import { authJWT } from "../factories/auth/auth.factory.js";
+import { checkPermissions } from "../../core/middleware/checkPermissions.js";
+import { errorSchema } from "../../core/shared/schema/errorSchema.js";
+import { paginationQuerySchema, uuidParamsSchema } from "../../core/shared/schema/querySchemas.js";
+
+const visitorParams = {
+  type: "object",
+  required: ["name", "cpf"],
+  properties: {
+    name: { type: "string", minLength: 2, maxLength: 150 },
+    cpf: { type: "string", minLength: 11, maxLength: 14 },
+    photo: { type: "string", nullable: true, maxLength: 6990600 },
+    email: { type: "string", nullable: true, format: "email", maxLength: 254 },
+    phone: { type: "string", nullable: true, maxLength: 20 },
+    address: { type: "string", nullable: true, maxLength: 255 },
+    city: { type: "string", nullable: true, maxLength: 100 },
+    state: { type: "string", nullable: true, minLength: 2, maxLength: 2 },
+    zipCode: { type: "string", nullable: true, maxLength: 9 },
+  },
+  additionalProperties: false,
+};
+
+const visitorUpdateParams = {
+  type: "object",
+  required: ["name"],
+  properties: {
+    name: { type: "string", minLength: 2, maxLength: 150 },
+    photo: { type: "string", nullable: true, maxLength: 6990600 },
+    email: { type: "string", nullable: true, format: "email", maxLength: 254 },
+    phone: { type: "string", nullable: true, maxLength: 20 },
+    address: { type: "string", nullable: true, maxLength: 255 },
+    city: { type: "string", nullable: true, maxLength: 100 },
+    state: { type: "string", nullable: true, minLength: 2, maxLength: 2 },
+    zipCode: { type: "string", nullable: true, maxLength: 9 },
+  },
+  additionalProperties: false,
+};
+
+const visitorResponse = {
+  type: "object",
+  properties: {
+    uuid: { type: "string", example: "123e4567-e89b-12d3-a456-426614174000" },
+    name: { type: "string", example: "João da Silva" },
+
+    photo: {
+      type: "string",
+      nullable: true,
+      example: "https://example.com/photo.jpg",
+    },
+    email: { type: "string", nullable: true, example: "kadoia@gmail.com" },
+    phone: { type: "string", nullable: true, example: "11987654321" },
+    address: { type: "string", nullable: true, example: "Rua Exemplo, 123" },
+    city: { type: "string", nullable: true, example: "São Paulo" },
+    state: { type: "string", nullable: true, example: "SP" },
+    zipCode: { type: "string", nullable: true, example: "01000-000" },
+
+    createdAt: {
+      type: "string",
+      format: "date-time",
+      example: "2023-10-01T12:00:00Z",
+    },
+
+    updatedAt: {
+      type: "string",
+      format: "date-time",
+      example: "2023-10-01T12:00:00Z",
+    },
+  },
+};
+
+export async function visitorRouter(app: FastifyInstance) {
+  app.addHook("onRoute", (route) => { route.config = { ...route.config, permission: { resource: "visitors" } }; });
+  app.addHook("preHandler", authJWT);
+  app.addHook("preHandler", checkPermissions);
+  const visitorController = new VisitorController();
+
+  app.route({
+    method: "GET",
+    url: "/",
+    config: {
+      audit: {
+        failureAction: "LIST",
+        module: "VISITOR",
+        resourceType: "VISITOR",
+      },
+    },
+    schema: {
+      tags: ["Visitor"],
+      description: "Retrieve a list of Visitors",
+      summary: "Get Visitors",
+      querystring: paginationQuerySchema,
+      response: {
+        200: {
+          type: "object",
+          properties: {
+            message: { type: "string" },
+            visitor: {
+              type: "array",
+              items: visitorResponse,
+            },
+            count: { type: "integer" },
+          },
+        },
+        500: {
+          type: "object",
+          properties: {
+            message: { type: "string" },
+          },
+        },
+      },
+    },
+    handler: visitorController.getVisitorsController,
+  });
+
+  app.route({
+    method: "POST",
+    url: "/",
+    config: {
+      audit: {
+        failureAction: "CREATE",
+        module: "VISITOR",
+        resourceType: "VISITOR",
+      },
+    },
+    schema: {
+      tags: ["Visitor"],
+      description: "Create a new Visitor",
+      summary: "Create Visitor",
+      body: visitorParams,
+
+      response: {
+        201: {
+          type: "object",
+          properties: {
+            message: { type: "string" },
+            visitor: visitorResponse,
+          },
+        },
+        ...errorSchema,
+      },
+    },
+    handler: visitorController.createVisitorController,
+  });
+
+  app.route({
+    method: "DELETE",
+    url: "/:uuid",
+    config: {
+      audit: {
+        failureAction: "DELETE",
+        module: "VISITOR",
+        resourceType: "VISITOR",
+      },
+    },
+    schema: {
+      tags: ["Visitor"],
+      description: "Delete a Visitor",
+      summary: "Delete Visitor",
+      params: uuidParamsSchema,
+      response: {
+        200: {
+          type: "object",
+          properties: {
+            message: { type: "string" },
+          },
+        },
+        ...errorSchema,
+      },
+    },
+    handler: visitorController.deleteVisitorController,
+  });
+
+  app.route({
+    method: "PUT",
+    url: "/:uuid",
+    config: {
+      audit: {
+        failureAction: "UPDATE",
+        module: "VISITOR",
+        resourceType: "VISITOR",
+      },
+    },
+    schema: {
+      tags: ["Visitor"],
+      description: "Update a Visitor",
+      summary: "Update Visitor",
+      params: uuidParamsSchema,
+      body: visitorUpdateParams,
+      response: {
+        200: {
+          type: "object",
+          properties: {
+            message: { type: "string" },
+            visitor: visitorResponse,
+          },
+        },
+        ...errorSchema,
+      },
+    },
+    handler: visitorController.updateVisitorController,
+  });
+}

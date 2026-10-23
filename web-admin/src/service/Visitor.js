@@ -1,38 +1,51 @@
 import API from "@API/API";
 
-export const getVisitor = async (page, limit, search) => {
+export const getVisitor = async (page, limit, search, signal) => {
   const url = search
     ? `/visitors?page=${page || 0}&limit=${limit || 10}&search=${search}`
     : `/visitors?page=${page || 0}&limit=${limit || 10}`;
 
-  const { data } = await API.get(url, {
-    headers: { Authorization: localStorage.getItem("token") },
-  });
-
-  console.log(data);
+  const { data } = await API.get(url, { signal });
 
   return data;
 };
 
 export const postVisitor = async (visitor) => {
-  const { data } = await API.post("/visitors", visitor, {
-    headers: { Authorization: localStorage.getItem("token") },
-  });
+  const payload = {
+    name: visitor.name,
+    cpf: visitor.cpf,
+    photo: visitor.photo || null,
+    email: visitor.email || null,
+    phone: visitor.phone || null,
+    address: visitor.address || null,
+    city: visitor.city || null,
+    state: visitor.state || null,
+    zipCode: visitor.zipCode || null,
+  };
+
+  const { data } = await API.post("/visitors", payload);
 
   return data;
 };
 
 export const putVisitor = async (visitor, uuid) => {
-  const { data } = await API.put(`/visitors/${uuid}`, visitor, {
-    headers: { Authorization: localStorage.getItem("token") },
-  });
+  const payload = {
+    name: visitor.name,
+    photo: visitor.photo || null,
+    email: visitor.email || null,
+    phone: visitor.phone || null,
+    address: visitor.address || null,
+    city: visitor.city || null,
+    state: visitor.state || null,
+    zipCode: visitor.zipCode || null,
+  };
+
+  const { data } = await API.put(`/visitors/${uuid}`, payload);
 
   return data;
 };
 
 export const deleteVisitor = async (uuid) => {
-  const { data } = await API.delete(`/visitors/${uuid}`, {
-    headers: { Authorization: localStorage.getItem("token") },
-  });
+  const { data } = await API.delete(`/visitors/${uuid}`);
   return data;
 };

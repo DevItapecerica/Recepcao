@@ -4,13 +4,16 @@ import { useNavigate } from "react-router-dom";
 
 const Singout = () => {
   const { Logout } = useAuth();
-  const Navigate = useNavigate();
+  const navigate = useNavigate();
   useEffect(() => {
-    Logout();
-    Navigate("/");
-  });
+    const signOut = async () => {
+      await Logout();
+      navigate("/", { replace: true });
+    };
+    signOut();
+  }, [Logout, navigate]);
 
-  return;
+  return null;
 };
 
 export default Singout;

@@ -1,46 +1,39 @@
-import fastify from "fastify";
-import fastifyCors from "@fastify/cors";
+import Fastify from "fastify";
 
 import { fastifySwagger } from "@fastify/swagger";
-
 import { fastifySwaggerUi } from "@fastify/swagger-ui";
-import { Router } from "./router/routes.js";
+import fastifyCookie from "@fastify/cookie";
+import fastifyRateLimit from "@fastify/rate-limit";
+import fastifyHelmet from "@fastify/helmet";
 
-import { PORT } from "./config/env.js";
-import { interfaceErrorResponse } from "./types/errorTypes.js";
+import logConfig from "./core/config/logConfig.js";
+import ErrorHook from "./core/hooks/ErrorHook.js";
+import bootstrap from "./app.js";
 
-import "./db/model/association.js";
+import { APPLICATION_ENVORIMENT, CORS_ORIGIN, PORT } from "./core/config/env.js";
+import corsConfig from "./core/config/cors.js";
 
-const app = fastify({
-  logger: {
-    level: "info",
-    file: "./log.json", // Will use pino.destination()
-    serializers: {
-      res(res) {
-        // The default
-        return {
-          statusCode: res.statusCode,
-        };
-      },
-      req(req) {
-        return {
-          method: req.method,
-          url: req.url,
-          parameters: req.params,
-          // Including the headers in the log could be in violation
-          // of privacy laws, e.g. GDPR. You should use the "redact" option to
-          // remove sensitive fields. It could also leak authentication data in
-          // the logs.
-          headers: req.headers,
-        };
-      },
+const fastify = Fastify(logConfig);
+
+await fastify.register(fastifyCookie);
+await fastify.register(corsConfig)
+await fastify.register(fastifyRateLimit, { global: false });
+await fastify.register(fastifyHelmet, {
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "blob:"],
+      connectSrc: ["'self'", ...CORS_ORIGIN.split(",").map((origin) => origin.trim())],
+      objectSrc: ["'none'"],
+      frameAncestors: ["'none'"],
     },
   },
 });
 
-app.register(fastifyCors, { origin: "*" });
-
-app.register(fastifySwagger, {
+if (APPLICATION_ENVORIMENT !== "production") {
+  await fastify.register(fastifySwagger, {
   openapi: {
     openapi: "3.0.0",
     info: {
@@ -50,54 +43,26 @@ app.register(fastifySwagger, {
     },
     servers: [
       {
-        url: `http://192.168.16.13:3333`,
+        url: `http://localhost:${PORT}`,
         description: "Development server",
       },
     ],
   },
-});
-
-app.register(fastifySwaggerUi, {
-  routePrefix: "/documentation",
-});
-
-app.addHook("onRequest", (request, reply, done) => {
-  done();
-});
-
-app.setErrorHandler((error, request, reply) => {
-  const response: interfaceErrorResponse = {
-    ok: false,
-    code: Number(error.statusCode) || Number(error.code) || 500,
-    message: error.message || "Internal Server Error",
-  };
-
-  reply.status(response.code).send({ message: response.message, ok: false });
-
-  // Log the error details for debugging
-  console.error("Error occurred:", error);
-  console.error("Request details:", {
-    method: request.method,
-    url: request.url,
-    headers: request.headers,
-    body: request.body,
   });
 
-  console.error("Reply details:", {
-    statusCode: reply.statusCode,
-  });
+  await fastify.register(fastifySwaggerUi, { routePrefix: "/docs" });
+}
 
-  console.error("Stack trace:", error.stack);
-});
+await fastify.register(ErrorHook)
 
-app.register(Router, { prefix: "/api/v1" });
+await fastify.register(bootstrap, { prefix: "/api/v1" });
 
-app
-  .listen({ port: parseInt(PORT), host: "0.0.0.0" })
+
+await fastify
+  .listen({ port: Number.parseInt(PORT), host: "0.0.0.0" })
   .then(() => {
-    console.log(parseInt(PORT));
-    console.log(app.printRoutes());
-    console.log(`Aplicação rodando na porta ${parseInt(PORT)} \n`);
+    fastify.log.info(`Aplicação rodando na porta ${Number.parseInt(PORT)}`);
+    if (APPLICATION_ENVORIMENT !== "production") fastify.log.info(`Rotas:\n${fastify.printRoutes()}`);
   })
   .catch((err) => {
     console.error("Erro ao iniciar o servidor:", err);
