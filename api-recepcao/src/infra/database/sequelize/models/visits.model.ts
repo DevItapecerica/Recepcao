@@ -1,3 +1,4 @@
+
 import {
   Model,
   DataTypes,
@@ -14,7 +15,16 @@ export class Visits extends Model<
   declare uuid: CreationOptional<string>;
   declare creator_uuid: string;
   declare visitor_uuid: string;
-  declare subject: string;
+
+  // Observação opcional (coluna antiga)
+  declare subject: string | null;
+
+  // Assunto obrigatório para novas visitas (validado na API)
+  declare subject_uuid: CreationOptional<string | null>;
+
+  // Atendente opcional
+  declare attendant_uuid: CreationOptional<string | null>;
+
   declare date: string;
   declare visitedAt: Date;
 
@@ -50,27 +60,53 @@ export default (sequelize: Sequelize, dataTypes: typeof DataTypes) => {
           key: "uuid",
         },
       },
+
       subject: {
-        type: dataTypes.STRING,
-        allowNull: false,
+        type: dataTypes.STRING(255),
+        allowNull: true,
       },
+
+      subject_uuid: {
+        type: dataTypes.UUID,
+        allowNull: true,
+        defaultValue: null,
+        references: {
+          model: "subjects",
+          key: "uuid",
+        },
+      },
+
+      attendant_uuid: {
+        type: dataTypes.UUID,
+        allowNull: true,
+        defaultValue: null,
+        references: {
+          model: "attendants",
+          key: "uuid",
+        },
+      },
+
       date: {
         type: dataTypes.STRING,
         allowNull: false,
       },
+
       visitedAt: {
         type: dataTypes.DATE,
         allowNull: false,
         field: "visited_at",
       },
+
       createdAt: {
         type: dataTypes.DATE,
         defaultValue: dataTypes.NOW,
       },
+
       updatedAt: {
         type: dataTypes.DATE,
         defaultValue: dataTypes.NOW,
       },
+
       deletedAt: {
         type: dataTypes.DATE,
         allowNull: true,
@@ -81,16 +117,28 @@ export default (sequelize: Sequelize, dataTypes: typeof DataTypes) => {
     },
   );
 
-  (Visits as any).associate = (models: any) => {
-    Visits.belongsTo(models.VisitorsModel, {
-      foreignKey: "visitor_uuid",
-      as: "Visitor",
-    });
-    Visits.belongsTo(models.UserModel, {
-      foreignKey: "creator_uuid",
-      as: "Creator",
-    });
-  };
 
-  return Visits;
+(Visits as any).associate = (models: any) => {
+  Visits.belongsTo(models.VisitorsModel, {
+    foreignKey: "visitor_uuid",
+    as: "Visitor",
+  });
+
+  Visits.belongsTo(models.UserModel, {
+    foreignKey: "creator_uuid",
+    as: "Creator",
+  });
+
+  Visits.belongsTo(models.SubjectsModel, {
+    foreignKey: "subject_uuid",
+    as: "Subject",
+  });
+
+   Visits.belongsTo(models.AttendantsModel, {
+    foreignKey: "attendant_uuid",
+    as: "Attendant",
+  });
+};
+
+return Visits;
 };

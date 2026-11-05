@@ -69,14 +69,23 @@ export class SequelizeVisitRepository implements IVisitRepository {
     return rows.map((row: Visits) => this.toDomain(row));
   }
 
-  async create(visit: Visit): Promise<Visit> {
-    const visitedAt = this.parseVisitDate(visit.date);
-    const model = await this.model.create({
-      creator_uuid: visit.creator_uuid, visitor_uuid: visit.visitor_uuid,
-      subject: visit.subject, date: visit.date, visitedAt,
-    });
-    return this.toDomain(model);
-  }
+
+async create(visit: Visit): Promise<Visit> {
+  const visitedAt = this.parseVisitDate(visit.date);
+
+  const model = await this.model.create({
+    creator_uuid: visit.creator_uuid,
+    visitor_uuid: visit.visitor_uuid,
+    subject_uuid: visit.subject_uuid,
+    attendant_uuid: visit.attendant_uuid ?? null,
+    subject: visit.subject ?? null,
+    date: visit.date,
+    visitedAt,
+  });
+
+  return this.toDomain(model);
+}
+
 
   async dashboard({
     dateFrom,
