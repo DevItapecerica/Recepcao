@@ -22,21 +22,41 @@ export class SequelizeVisitRepository implements IVisitRepository {
     return db.VisitsModel;
   }
 
-  private toDomain(model: Visits): Visit {
-    const plain = model.get({ plain: true }) as any;
-    return Visit.create({
-      ...plain,
-      creator: plain.Creator ? new User(plain.Creator) : undefined,
-      visitor: plain.Visitor ? Visitor.create(plain.Visitor) : undefined,
-    });
-  }
+  
+private toDomain(model: Visits): Visit {
+  const plain = model.get({ plain: true }) as any;
 
-  private get include() {
-    return [
-      { model: db.UserModel, as: "Creator" },
-      { model: db.VisitorsModel, as: "Visitor" },
-    ];
-  }
+  return Visit.create({
+    ...plain,
+    creator: plain.Creator
+      ? new User(plain.Creator)
+      : undefined,
+    visitor: plain.Visitor
+      ? Visitor.create(plain.Visitor)
+      : undefined,
+    subjectName: plain.Subject?.name ?? null,
+    attendantName: plain.Attendant?.name ?? null,
+  });
+}
+
+ 
+private get include() {
+  return [
+    { model: db.UserModel, as: "Creator" },
+    { model: db.VisitorsModel, as: "Visitor" },
+    {
+      model: db.SubjectsModel,
+      as: "Subject",
+      paranoid: false,
+    },
+    {
+      model: db.AttendantsModel,
+      as: "Attendant",
+      paranoid: false,
+    },
+  ];
+}
+
 
   async list({ search, offset, limit }: VisitListOptions): Promise<VisitListResult> {
     const date = search?.split("T")[0];
@@ -60,23 +80,34 @@ export class SequelizeVisitRepository implements IVisitRepository {
     return { count: result.count, rows: result.rows.map((row: Visits) => this.toDomain(row)) };
   }
 
-  async listByVisitorId(visitorUuid: string): Promise<Visit[]> {
-    const rows = await this.model.findAll({
-      where: { visitor_uuid: visitorUuid },
-      include: this.include,
-      order: [["createdAt", "DESC"]],
-    });
-    return rows.map((row: Visits) => this.toDomain(row));
-  }
 
-  async create(visit: Visit): Promise<Visit> {
-    const visitedAt = this.parseVisitDate(visit.date);
-    const model = await this.model.create({
-      creator_uuid: visit.creator_uuid, visitor_uuid: visit.visitor_uuid,
-      subject: visit.subject, date: visit.date, visitedAt,
-    });
-    return this.toDomain(model);
-  }
+async listByVisitorId(visitorUuid: string): Promise<Visit[]> {
+  const rows = await this.model.findAll({
+    where: { visitor_uuid: visitorUuid },
+    include: this.include,
+    order: [["createdAt", "DESC"]],
+  });
+
+  return rows.map((row: Visits) => this.toDomain(row));
+}
+
+
+async create(visit: Visit): Promise<Visit> {
+  const visitedAt = this.parseVisitDate(visit.date);
+
+  const model = await this.model.create({
+    creator_uuid: visit.creator_uuid,
+    visitor_uuid: visit.visitor_uuid,
+    subject_uuid: visit.subject_uuid,
+    attendant_uuid: visit.attendant_uuid ?? null,
+    subject: visit.subject ?? null,
+    date: visit.date,
+    visitedAt,
+  });
+
+  return this.toDomain(model);
+}
+
 
   async dashboard({
     dateFrom,
