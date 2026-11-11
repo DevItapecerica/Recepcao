@@ -44,8 +44,16 @@ private get include() {
   return [
     { model: db.UserModel, as: "Creator" },
     { model: db.VisitorsModel, as: "Visitor" },
-    { model: db.SubjectsModel, as: "Subject" },
-    { model: db.AttendantsModel, as: "Attendant" },
+    {
+      model: db.SubjectsModel,
+      as: "Subject",
+      paranoid: false,
+    },
+    {
+      model: db.AttendantsModel,
+      as: "Attendant",
+      paranoid: false,
+    },
   ];
 }
 

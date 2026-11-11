@@ -17,6 +17,7 @@ export class Attendants extends Model<
   declare description: CreationOptional<string | null>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
+  declare deletedAt: CreationOptional<Date | null>;
 }
 
 export default (sequelize: Sequelize, dataTypes: typeof DataTypes) => {
@@ -51,9 +52,17 @@ export default (sequelize: Sequelize, dataTypes: typeof DataTypes) => {
         allowNull: false,
         defaultValue: dataTypes.NOW,
       },
+
+      deletedAt: {
+        type: dataTypes.DATE,
+        allowNull: true,
+        defaultValue: null,
+      },
     },
     {
       tableName: "attendants",
+      timestamps: true,
+      paranoid: true,
     },
   );
 
