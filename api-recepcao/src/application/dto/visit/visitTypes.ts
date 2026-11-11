@@ -1,4 +1,3 @@
-
 import { UserRole } from "../../../domain/entities/User.js";
 import { Visit } from "../../../domain/entities/Visit.js";
 
@@ -36,22 +35,35 @@ export type VisitsQueryParams = {
 
 export interface VisitsResponse {
   uuid: string;
+
   creator_uuid: string;
   creator: {
     uuid?: string;
     role?: UserRole;
     username?: string;
   };
+
   visitor_uuid: string;
   visitor: {
     uuid?: string;
     name?: string;
     photo: string | null;
   };
+
+  // Observação da visita (campo antigo)
   subject: string | null;
+
+  // Identificadores do assunto e do atendente
   subject_uuid?: string | null;
   attendant_uuid?: string | null;
+
+  // Nomes para exibição no histórico
+  subjectName: string | null;
+  attendantName: string | null;
+
+  // Data e hora da visita
   date: string;
+
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;

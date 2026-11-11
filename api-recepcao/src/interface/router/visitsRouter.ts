@@ -24,6 +24,16 @@ const visitsParams = {
       format: "uuid",
       nullable: true,
     },
+
+subjectName: {
+  type: "string",
+  nullable: true,
+},
+attendantName: {
+  type: "string",
+  nullable: true,
+},
+
     subject: {
       type: "string",
       maxLength: 255,
@@ -116,6 +126,7 @@ attendant_uuid: {
 };
 
 
+
 const visitById = {
   type: "object",
   properties: {
@@ -131,6 +142,14 @@ const visitById = {
     attendant_uuid: {
       type: "string",
       format: "uuid",
+      nullable: true,
+    },
+    subjectName: {
+      type: "string",
+      nullable: true,
+    },
+    attendantName: {
+      type: "string",
       nullable: true,
     },
     date: {

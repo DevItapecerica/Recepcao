@@ -17,6 +17,9 @@ export interface VisitProps {
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date | null;
+
+  subjectName?: string | null;
+  attendantName?: string | null;
 }
 
 export class Visit {
@@ -33,6 +36,8 @@ export class Visit {
     public readonly deletedAt?: Date | null,
     public subject_uuid: string | null = null,
     public attendant_uuid: string | null = null,
+    public subjectName: string | null = null,
+    public attendantName: string | null = null,
   ) {}
 
   static create(p: VisitProps): Visit {
@@ -49,6 +54,8 @@ export class Visit {
       p.deletedAt,
       p.subject_uuid ?? null,
       p.attendant_uuid ?? null,
+      p.subjectName ?? null,
+      p.attendantName ?? null,
     );
   }
 }

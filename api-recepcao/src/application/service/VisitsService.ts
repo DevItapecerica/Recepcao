@@ -147,6 +147,8 @@ export class VisitsService {
       subject: v.subject,
       subject_uuid: v.subject_uuid ?? null,
       attendant_uuid: v.attendant_uuid ?? null,
+      subjectName: v.subjectName ?? null,
+      attendantName: v.attendantName ?? null,
       date: v.date,
       createdAt: v.createdAt!,
       updatedAt: v.updatedAt!,
@@ -163,6 +165,39 @@ export class VisitsService {
   async createVisits(
     visitsData: VisitsRequired,
   ): Promise<VisitsGenericResponse> {
+
+const visitDate = new Date(visitsData.date);
+
+if (Number.isNaN(visitDate.getTime())) {
+  throw new AppError(
+    "Data da visita inválida",
+    400,
+    "INVALID_VISIT_DATE",
+  );
+}
+
+const today = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "America/Sao_Paulo",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+}).format(new Date());
+
+const selectedDate = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "America/Sao_Paulo",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+}).format(visitDate);
+
+if (selectedDate !== today) {
+  throw new AppError(
+    "Só é permitido cadastrar visitas com a data de hoje",
+    400,
+    "VISIT_DATE_NOT_TODAY",
+  );
+}
+
     const visitor = await this.visitorRepository.findById(
       visitsData.visitor_uuid,
     );
@@ -260,6 +295,8 @@ export class VisitsService {
       subject: v.subject,
       subject_uuid: v.subject_uuid ?? null,
       attendant_uuid: v.attendant_uuid ?? null,
+      subjectName: v.subjectName ?? null,
+      attendantName: v.attendantName ?? null,
       date: v.date,
       createdAt: v.createdAt!,
       updatedAt: v.updatedAt!,
