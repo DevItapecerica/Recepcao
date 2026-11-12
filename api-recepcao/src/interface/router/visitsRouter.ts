@@ -6,47 +6,26 @@ import { VisitController } from "../controller/visits/visitsController.js";
 import { errorSchema } from "../../core/shared/schema/errorSchema.js";
 import { paginationQuerySchema, uuidParamsSchema } from "../../core/shared/schema/querySchemas.js";
 
-
 const visitsParams = {
   type: "object",
-  required: ["visitor_uuid", "subject_uuid", "date"],
+  required: ["visitor_uuid", "subject", "date"],
   properties: {
     visitor_uuid: {
       type: "string",
-      format: "uuid",
+      //   example: "123e4567-e89b-12d3-a456-426614174000",
     },
-    subject_uuid: {
-      type: "string",
-      format: "uuid",
-    },
-    attendant_uuid: {
-      type: "string",
-      format: "uuid",
-      nullable: true,
-    },
-
-subjectName: {
-  type: "string",
-  nullable: true,
-},
-attendantName: {
-  type: "string",
-  nullable: true,
-},
-
     subject: {
-      type: "string",
-      maxLength: 255,
-      nullable: true,
+      type: "string", minLength: 2, maxLength: 500,
+      //  example: "Reunião com assessor"
     },
     date: {
       type: "string",
       format: "date-time",
+      //   example: "2023-10-01T12:00:00Z",
     },
   },
   additionalProperties: false,
 };
-
 
 const visitsResponse = {
   type: "object",
@@ -85,22 +64,7 @@ const visitsResponse = {
         },
       },
     },
-
-subject: {
-  type: "string",
-  nullable: true,
-},
-subject_uuid: {
-  type: "string",
-  format: "uuid",
-  nullable: true,
-},
-attendant_uuid: {
-  type: "string",
-  format: "uuid",
-  nullable: true,
-},
-
+    subject: { type: "string", example: "Reunião com assessor" },
     date: {
       type: "string",
       format: "date-time",
@@ -118,43 +82,21 @@ attendant_uuid: {
       example: "2023-10-01T12:00:00Z",
     },
     deletedAt: {
-  type: "string",
-  format: "date-time",
-  nullable: true,
-},
+      type: "string",
+      format: "date-time",
+      example: "2023-10-01T12:00:00Z",
+    },
   },
 };
-
-
 
 const visitById = {
   type: "object",
   properties: {
-    subject: {
-      type: "string",
-      nullable: true,
-    },
-    subject_uuid: {
-      type: "string",
-      format: "uuid",
-      nullable: true,
-    },
-    attendant_uuid: {
-      type: "string",
-      format: "uuid",
-      nullable: true,
-    },
-    subjectName: {
-      type: "string",
-      nullable: true,
-    },
-    attendantName: {
-      type: "string",
-      nullable: true,
-    },
+    subject: { type: "string", example: "Reunião com assessor" },
     date: {
       type: "string",
       format: "date-time",
+      example: "2023-10-01T12:00:00Z",
     },
   },
 };

@@ -36,14 +36,8 @@ for (const file of modelFiles) {
   const fileUrl = pathToFileURL(filePath).href;
   const { default: defineModel } = await import(fileUrl);
   if (typeof defineModel !== "function") continue;
-
-const model = defineModel(sequelize, DataTypes);
-
-if (!model) {
-  throw new Error(`O arquivo ${file} não retornou um modelo Sequelize`);
-}
-
-db[model.name] = model;
+  const model = defineModel(sequelize, DataTypes);
+  db[model.name] = model;
 }
 
 // Executa associações
