@@ -1,22 +1,19 @@
+
 import { Dialog } from "primereact/dialog";
 import { Button } from "primereact/button";
-import { deleteVisitor } from "@Service/Visitor";
-
-import { useVisitors } from "@Context/visitors/VisitorsContext";
 import { useToast } from "@Context/toast/ToastContext";
+import { useDeleteVisitor } from "@/hooks/queries/useVisitors";
 
-const VisitorsDeleteModal = ({ visible, onHide }) => {
+const VisitorsDeleteModal = ({ visible, onHide, visitorTarget, setVisitorTarget }) => {
   const { showToast } = useToast();
-  // Context to manage user data
-  const { visitorTarget, setVisitorTarget, removeVisitor } = useVisitors();
+  // Contexto para gerenciar dados do usuário
+  const deleteMutation = useDeleteVisitor();
 
   // Submissão do formulário
   const onConfirm = async () => {
     try {
-      const { message } = await deleteVisitor(visitorTarget.uuid);
-      // Remove user from context
-      removeVisitor(visitorTarget.uuid);
-      showToast("success", "Sucesso", message || "Deleted successfully");
+      const { message } = await deleteMutation.mutateAsync(visitorTarget.uuid);
+      showToast("success", "Sucesso", message || "Excluído com sucesso");
 
       handleClose();
     } catch (error) {
@@ -37,7 +34,7 @@ const VisitorsDeleteModal = ({ visible, onHide }) => {
   const header = (
     <div className="flex items-center gap-3">
       <i className="pi pi-trash text-2xl text-red-500" />
-      <span className="text-xl font-bold text-red-500">Delete User?</span>
+      <span className="text-xl font-bold text-red-500">Excluir visitante?</span>
     </div>
   );
 
@@ -52,7 +49,7 @@ const VisitorsDeleteModal = ({ visible, onHide }) => {
     >
       <div className="mb-4">
         <p>
-          Are you sure you want to delete the Visitor{" "}
+          Tem certeza de que deseja excluir o visitante{" "}
           <b>{visitorTarget?.name}</b>?
         </p>
       </div>
@@ -68,6 +65,7 @@ const VisitorsDeleteModal = ({ visible, onHide }) => {
           icon="pi pi-trash"
           className="p-button-danger"
           onClick={onConfirm}
+          loading={deleteMutation.isPending}
         />
       </div>
     </Dialog>

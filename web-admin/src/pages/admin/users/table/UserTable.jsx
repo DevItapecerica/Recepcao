@@ -1,28 +1,30 @@
+
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import TableHeader from "@/components/table/TableHeader";
-import { Paginator } from "primereact/paginator";
 
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 
 import { useEffect, useState } from "react";
 import { useToast } from "@Context/toast/ToastContext";
-import { useUsers } from "@Context/users/UsersContext";
-import { getUser } from "@Service/User";
+import { useUsersQuery } from "@/hooks/queries/useUsers";
+import { useDebounce } from "@/hooks/useDebounce";
+import RowActions from "@/components/table/RowActions";
+import { confirmDialog } from "primereact/confirmdialog";
+import { useDeleteUser } from "@/hooks/queries/useUsers";
+import { useResendUserActivation } from "@/hooks/queries/useUsers";
+import { useProfile } from "@Context/profile/ProfileContext";
 
 const columns = [
-  { field: "first_name", header: "First Name" },
-  { field: "last_name", header: "Last Name" },
-  { field: "username", header: "Username" },
-  { field: "email", header: "Email" },
-  { field: "role", header: "Role" },
+  { field: "first_name", header: "Nome" },
+  { field: "last_name", header: "Sobrenome" },
+  { field: "username", header: "Nome de usuário" },
+  { field: "email", header: "E-mail" },
+  { field: "role", header: "Função" },
 ];
 
-const UserTable = ({ setEditIsVisible, setExcludeIsVisible }) => {
-  const { users, setUsers, totalUsers, setTotalUsers, setUserTarget } =
-    useUsers();
-
+const UserTable = ({ setEditIsVisible, setUserTarget }) => {
   const { showToast } = useToast();
   const [query, setQuery] = useState({
     page: 0,
@@ -30,23 +32,17 @@ const UserTable = ({ setEditIsVisible, setExcludeIsVisible }) => {
     search: null,
   });
 
-  const fetchData = async () => {
-    try {
-      const { user, count } = await getUser(
-        query.page,
-        query.limit,
-        query.search
-      );
-      setTotalUsers(count);
-      setUsers(user);
-    } catch (error) {
-      showToast("error", "error", error.response.data.message);
-    }
-  };
+  const search = useDebounce(query.search);
+  const { data, isPending, isFetching, error } = useUsersQuery({ ...query, search });
+  const users = data?.user || [];
+  const totalUsers = data?.count || 0;
+  const deleteUser = useDeleteUser();
+  const resendActivation = useResendUserActivation();
+  const { user: currentUser } = useProfile();
 
   useEffect(() => {
-    fetchData();
-  }, [query]);
+    if (error) showToast("error", "Erro", error.response?.data?.message || error.message);
+  }, [error, showToast]);
 
   const ActionsFields = (data) => {
     const toEdit = () => {
@@ -54,29 +50,21 @@ const UserTable = ({ setEditIsVisible, setExcludeIsVisible }) => {
       setEditIsVisible(true);
     };
 
-    const toExclude = () => {
-      setUserTarget(data);
-      setExcludeIsVisible(true);
-    };
+    const remove = () => confirmDialog({ message: `Excluir ${data.first_name} ${data.last_name}?`, header: "Confirmar exclusão", icon: "pi pi-exclamation-triangle", acceptLabel: "Excluir", rejectLabel: "Cancelar", acceptClassName: "p-button-danger", accept: () => deleteUser.mutateAsync(data.uuid) });
+    const canManage = currentUser?.role === "superadmin" || !["admin", "superadmin"].includes(data.role);
+    const items = canManage ? [
+      { label: "Editar", icon: "pi pi-pencil", command: toEdit },
+      ...(data.firstLogin ? [{ label: "Reenviar ativação", icon: "pi pi-envelope", command: async () => { try { const result = await resendActivation.mutateAsync(data.uuid); showToast(result.activationSent ? "success" : "warn", "Ativação", result.message); } catch (error) { showToast("error", "Erro", error.response?.data?.message || error.message); } } }] : []),
+      ...(currentUser?.role === "superadmin" ? [{ label: "Excluir", icon: "pi pi-trash", command: remove }] : []),
+    ] : [];
+    return items.length ? <RowActions label={`Ações de ${data.first_name}`} items={items} /> : null;
+  };
 
-    return (
-      <div className="flex items-center gap-2">
-        <Button
-          icon="pi pi-pencil"
-          className="p-button-rounded p-button-text"
-          onClick={() => {
-            toEdit();
-          }}
-        />
-        <Button
-          icon="pi pi-trash"
-          className="p-button-rounded p-button-text p-button-danger"
-          onClick={() => {
-            toExclude();
-          }}
-        />
-      </div>
-    );
+  const roleLabels = {
+    admin: "Administrador",
+    user: "Usuário",
+    recepcionist: "Recepcionista",
+    superadmin: "Superadministrador",
   };
 
   return (
@@ -84,7 +72,7 @@ const UserTable = ({ setEditIsVisible, setExcludeIsVisible }) => {
       <div className="p-inputgroup flex-1 pb-4">
         <InputText
           type="search"
-          placeholder="Search by name"
+          placeholder="Buscar por nome"
           value={query.search || ""}
           onChange={(e) =>
             setQuery((prev) => ({
@@ -103,39 +91,31 @@ const UserTable = ({ setEditIsVisible, setExcludeIsVisible }) => {
         end={
           <div className="md:flex items-center gap-2">
             <Button
-              label="New user"
+              label="Novo usuário"
               icon="pi pi-user-plus"
               className="btn-primary"
               onClick={() => setEditIsVisible(true)}
             />
           </div>
         }
-        center={<h2 className="text-2xl font-bold">Users</h2>}
+        center={<h2 className="text-2xl font-bold">Usuários</h2>}
         start={
           <div className="flex items-center gap-4">
-            <span>Total Users: {totalUsers}</span>
+            <span className="text-sm text-muted">{totalUsers} usuários</span>
           </div>
         }
       ></TableHeader>
-      <DataTable value={users} size="medium" stripedRows>
+      <DataTable value={users} lazy paginator first={query.page * query.limit} rows={query.limit} totalRecords={totalUsers} rowsPerPageOptions={[10, 20, 30]} onPage={(e) => setQuery((prev) => ({ ...prev, page: e.page, limit: e.rows }))} scrollable tableStyle={{ minWidth: "64rem" }} stripedRows loading={isPending || isFetching} emptyMessage="Nenhum usuário encontrado.">
         {columns.map((col, index) => (
-          <Column key={index} field={col.field} header={col.header} />
+          <Column
+            key={index}
+            field={col.field}
+            header={col.header}
+            body={col.field === "role" ? (rowData) => roleLabels[rowData.role] || rowData.role : undefined}
+          />
         ))}
-        <Column header="Actions" body={(rowData) => ActionsFields(rowData)} />
+        <Column header="Ações" body={(rowData) => ActionsFields(rowData)} />
       </DataTable>
-      <Paginator
-        first={query.page}
-        rows={query.limit}
-        totalRecords={totalUsers}
-        rowsPerPageOptions={[1, 10, 20, 30]}
-        onPageChange={(e) => {
-          setQuery((prev) => ({
-            ...prev,
-            page: e.page,
-            limit: e.rows,
-          }));
-        }}
-      />
     </section>
   );
 };
