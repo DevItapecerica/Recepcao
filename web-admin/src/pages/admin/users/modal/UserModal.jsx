@@ -11,6 +11,7 @@ import { useSaveUser } from "@/hooks/queries/useUsers";
 import { useProfile } from "@Context/profile/ProfileContext";
 
 const rolesOption = [
+  { label: "Visualizador", value: "viewer" },
   { label: "Administrador", value: "admin" },
   { label: "Usuário", value: "user" },
   { label: "Recepcionista", value: "recepcionist" },
@@ -21,7 +22,7 @@ const UserModal = ({ visible, onHide, userTarget, setUserTarget }) => {
   const { showToast } = useToast();
   const saveUser = useSaveUser();
   const { user: currentUser } = useProfile();
-  const availableRoles = currentUser?.role === "superadmin" ? rolesOption : rolesOption.filter(({ value }) => ["user", "recepcionist"].includes(value));
+  const availableRoles = currentUser?.role === "superadmin" ? rolesOption : rolesOption.filter(({ value }) => ["user", "recepcionist", "viewer"].includes(value));
 
   const {
     register,

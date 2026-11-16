@@ -9,6 +9,7 @@ export interface AuditRouteMetadata {
 }
 
 export type PermissionResource =
+  | "dashboard"
   | "users"
   | "visitors"
   | "visits"

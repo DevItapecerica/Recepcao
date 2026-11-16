@@ -170,7 +170,7 @@ const dashboardVisitor = {
 };
 
 export async function visitsRouter(app: FastifyInstance) {
-  app.addHook("onRoute", (route) => { route.config = { ...route.config, permission: { resource: "visits" } }; });
+  app.addHook("onRoute", (route) => { route.config = { ...route.config, permission: route.config?.permission ?? { resource: "visits" } }; });
   app.addHook("preHandler", authJWT);
   app.addHook("preHandler", checkPermissions);
   const visitController = new VisitController();
@@ -179,6 +179,7 @@ export async function visitsRouter(app: FastifyInstance) {
     method: "GET",
     url: "/dashboard",
     config: {
+      permission: { resource: "dashboard" },
       audit: {
         failureAction: "DASHBOARD",
         module: "VISITS",

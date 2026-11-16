@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import bcrypt from "bcryptjs";
-import { User } from "../../domain/entities/User.js";
+import { User, UserRole } from "../../domain/entities/User.js";
 import { IUserRepository } from "../../domain/repositories/user/user.repository.js";
 import { UserPolicyDomainService } from "../../domain/services/user/userPolicy.domain.service.js";
 import { UserService } from "./UserService.js";
@@ -10,7 +10,7 @@ import { IUserActivationRepository } from "../../domain/repositories/auth/user-a
 import { IUserSessionRepository } from "../../domain/repositories/auth/user-session.repository.js";
 
 const uuid = "31a36d5d-0bd3-45a0-bdde-9229497f870f";
-const makeUser = async (role: "user" | "admin" | "superadmin" = "user") => new User({
+const makeUser = async (role: UserRole = "user") => new User({
   uuid, first_name: "Ana", last_name: "Silva", username: "ana.silva",
   email: "ana@example.com", cpf: "529.982.247-25", password: await bcrypt.hash("SenhaAntiga1!", 4), role,
 });
@@ -30,6 +30,20 @@ test("admin cannot create privileged roles", async () => {
   const repository = repositoryFor(null);
   const service = new UserService(repository, new UserPolicyDomainService(repository));
   await assert.rejects(() => service.CreateUser({ first_name: "Aline", last_name: "Souza", email: "aline@example.com", cpf: "529.982.247-25", role: "superadmin" }, "admin"), (error: any) => error.code === "ROLE_ESCALATION");
+});
+
+test("admin can create and edit viewer accounts", async () => {
+  const repository = repositoryFor(await makeUser("viewer"));
+  const service = new UserService(repository, new UserPolicyDomainService(repository));
+  const data = { first_name: "Aline", last_name: "Souza", email: "aline@example.com", cpf: "529.982.247-25", role: "viewer" as const };
+  assert.equal((await service.CreateUser(data, "admin")).user.role, "viewer");
+  assert.equal((await service.alterUser(uuid, data, "admin")).user.role, "viewer");
+});
+
+test("viewer cannot change the password in read-only settings", async () => {
+  const repository = repositoryFor(await makeUser("viewer"));
+  const service = new UserService(repository, new UserPolicyDomainService(repository));
+  await assert.rejects(service.alterPassword(uuid, "SenhaAntiga1!", "SenhaNovaForte2@"), { code: "FORBIDDEN" });
 });
 
 test("prevents self deletion and deletion of the last superadmin", async () => {

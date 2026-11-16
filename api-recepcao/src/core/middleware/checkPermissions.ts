@@ -1,9 +1,18 @@
 
 import { FastifyRequest } from "fastify";
 import { AppError } from "../types/errorTypes.js";
+import { UserRole } from "../../domain/entities/User.js";
 
 const permissions = {
+  dashboard: {
+    viewer: ["GET"],
+    user: ["GET"],
+    recepcionist: ["GET"],
+    admin: ["GET"],
+    superadmin: ["GET"],
+  },
   users: {
+    viewer: [],
     user: [],
     recepcionist: [],
     admin: ["GET", "POST", "PUT"],
@@ -11,6 +20,7 @@ const permissions = {
   },
 
   visitors: {
+    viewer: [],
     user: ["GET", "POST", "PUT"],
     recepcionist: ["GET", "POST", "PUT"],
     admin: ["GET", "POST", "PUT"],
@@ -18,6 +28,7 @@ const permissions = {
   },
 
   visits: {
+    viewer: [],
     user: ["GET", "POST"],
     recepcionist: ["GET", "POST"],
     admin: ["GET", "POST"],
@@ -25,6 +36,7 @@ const permissions = {
   },
 
   occurrences: {
+    viewer: [],
     user: ["GET"],
     recepcionist: ["GET", "POST", "PUT", "DELETE"],
     admin: ["GET", "POST", "PUT", "DELETE"],
@@ -32,6 +44,7 @@ const permissions = {
   },
 
   subjects: {
+    viewer: [],
     user: ["GET"],
     recepcionist: ["GET"],
     admin: ["GET", "POST", "PUT"],
@@ -39,6 +52,7 @@ const permissions = {
   },
 
   attendants: {
+    viewer: [],
     user: ["GET"],
     recepcionist: ["GET"],
     admin: ["GET", "POST", "PUT"],
@@ -50,15 +64,11 @@ export async function checkPermissions(
   request: FastifyRequest,
 ): Promise<void> {
   const resource = request.routeOptions.config.permission?.resource;
-  const role = request.user?.role as
-    | "user"
-    | "recepcionist"
-    | "admin"
-    | "superadmin";
+  const role = request.user?.role as UserRole;
 
   const allowed =
     resource && role && resource in permissions
-      ? permissions[resource as keyof typeof permissions][role]
+      ? permissions[resource as keyof typeof permissions][role] ?? []
       : [];
 
   if (!(allowed as readonly string[]).includes(request.method)) {

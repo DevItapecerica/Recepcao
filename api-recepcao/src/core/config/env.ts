@@ -37,8 +37,8 @@ export const CORS_ORIGIN = must("CORS_ORIGIN");
 export const TRUSTED_PROXIES = (process.env.TRUSTED_PROXIES || "loopback").split(",").map((value) => value.trim()).filter(Boolean);
 
 
-export const MAIL_ADRESS = must("MAIL_ADRESS");
-export const MAIL_PASSWORD = must("MAIL_PASSWORD");
-export const MAIL_HOST = must("MAIL_HOST");
-export const MAIL_PORT = Number.parseInt(must("MAIL_PORT"), 10);
+export const MAIL_ADRESS = process.env.MAIL_ADRESS || "";
+export const MAIL_PASSWORD = process.env.MAIL_PASSWORD || "";
+export const MAIL_HOST = process.env.MAIL_HOST || "";
+export const MAIL_PORT = Number(process.env.MAIL_PORT || 587);
 export const MAIL_SECURE = MAIL_PORT === 465;

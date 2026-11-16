@@ -20,7 +20,7 @@ export class UserDB extends Model<
   declare email: string;
   declare cpf: string;
   declare password: string;
-  declare role: "admin" | "user" | "recepcionist" | "superadmin";
+  declare role: "admin" | "user" | "recepcionist" | "superadmin" | "viewer";
 
   declare firstLogin: CreationOptional<boolean>;
   declare createdAt: CreationOptional<Date>;
@@ -62,7 +62,7 @@ export default (sequelize: Sequelize, dataTypes: typeof DataTypes) => {
         allowNull: false,
       },
       role: {
-        type: dataTypes.ENUM("admin", "user", "recepcionist", "superadmin"),
+        type: dataTypes.ENUM("admin", "user", "recepcionist", "superadmin", "viewer"),
         allowNull: false,
       },
       firstLogin: {
