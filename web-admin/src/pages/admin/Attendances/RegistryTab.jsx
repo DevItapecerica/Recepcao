@@ -93,7 +93,7 @@ export default function RegistryTab({ type, title }) {
             if (name.trim()) saveMutation.mutate();
           }}
         >
-          <h2 className="text-lg font-semibold text-font-secondary">
+          <h2 className="text-lg font-semibold black">
             {editing ? `Editar ${title}` : `Cadastrar ${title}`}
           </h2>
 

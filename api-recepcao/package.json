@@ -23,12 +23,12 @@
     "start": "node dist/server.js",
     "prestart": "npm install --production",
     "migrate:generate": "npx ts-node src/core/utils/generateMigration.ts",
-    "migrate": "npm run build && npx sequelize-cli db:migrate",
-    "migrate:undo": "npm run build && npx sequelize-cli db:migrate:undo",
-    "migrate:undo:all": "npm run build && npx sequelize-cli db:migrate:undo:all",
-    "seed": "npm run build && npx sequelize-cli db:seed:all",
-    "seed:undo": "npm run build && npx sequelize-cli db:seed:undo",
-    "seed:undo:all": "npm run build && npx sequelize-cli db:seed:undo:all"
+    "migrate": "npm run build && npx sequelize-cli db:migrate --options-path .sequelizerc.cjs",
+    "migrate:undo": "npm run build && npx sequelize-cli db:migrate:undo --options-path .sequelizerc.cjs",
+    "migrate:undo:all": "npm run build && npx sequelize-cli db:migrate:undo:all --options-path .sequelizerc.cjs",
+    "seed": "npm run build && npx sequelize-cli db:seed:all --options-path .sequelizerc.cjs",
+    "seed:undo": "npm run build && npx sequelize-cli db:seed:undo --options-path .sequelizerc.cjs",
+    "seed:undo:all": "npm run build && npx sequelize-cli db:seed:undo:all --options-path .sequelizerc.cjs"
   },
   "dependencies": {
     "@fastify/cookie": "^11.1.2",
