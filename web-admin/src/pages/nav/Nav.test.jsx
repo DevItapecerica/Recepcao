@@ -9,12 +9,13 @@ vi.mock("@/context/theme/ThemeContext", () => ({ useThemeContext: () => ({ toggl
 import Nav from "./Nav";
 
 describe("topbar", () => {
-  it("exibe somente painel e configurações para viewer", () => {
+  it("exibe painel, visitas e configurações para viewer", () => {
     state.user = { name: "Ana", role: "viewer" };
     render(<MemoryRouter initialEntries={["/Admin"]}><Nav /></MemoryRouter>);
     expect(screen.getByRole("link", { name: "Painel" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Visitas" })).toHaveAttribute("href", "/Admin/Visits");
     expect(screen.getByRole("link", { name: "Configurações" })).toBeInTheDocument();
-    for (const name of ["Visitantes", "Usuários", "Visitas", "Atendimentos"]) {
+    for (const name of ["Visitantes", "Usuários", "Atendimentos"]) {
       expect(screen.queryByRole("link", { name })).not.toBeInTheDocument();
     }
   });

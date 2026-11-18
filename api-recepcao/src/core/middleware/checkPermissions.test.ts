@@ -9,24 +9,26 @@ const requestFor = (resource: string, method: string, role = "viewer") => ({
   routeOptions: { config: { permission: { resource } } },
 }) as FastifyRequest;
 
-test("viewer can only read the dashboard", async () => {
+test("viewer pode apenas consultar o painel e as visitas", async () => {
   await checkPermissions(requestFor("dashboard", "GET"));
-  for (const resource of ["users", "visitors", "visits", "occurrences", "subjects", "attendants"]) {
+  await checkPermissions(requestFor("visits", "GET"));
+  for (const resource of ["users", "visitors", "occurrences", "subjects", "attendants"]) {
     for (const method of ["GET", "POST", "PUT", "PATCH", "DELETE"]) {
       await assert.rejects(checkPermissions(requestFor(resource, method)), { code: "FORBIDDEN" });
     }
   }
   for (const method of ["POST", "PUT", "PATCH", "DELETE"]) {
     await assert.rejects(checkPermissions(requestFor("dashboard", method)), { code: "FORBIDDEN" });
+    await assert.rejects(checkPermissions(requestFor("visits", method)), { code: "FORBIDDEN" });
   }
 });
 
-test("existing roles can still read the dashboard", async () => {
+test("os demais perfis continuam podendo consultar o painel", async () => {
   for (const role of ["user", "recepcionist", "admin", "superadmin"]) {
     await checkPermissions(requestFor("dashboard", "GET", role));
   }
 });
 
-test("unknown roles are forbidden", async () => {
+test("perfis desconhecidos têm acesso negado", async () => {
   await assert.rejects(checkPermissions(requestFor("dashboard", "GET", "unknown")), { code: "FORBIDDEN" });
 });

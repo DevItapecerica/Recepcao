@@ -28,7 +28,7 @@ describe("ProtectRouter", () => {
     profileState.user = { role: "user" };
   });
 
-  it.each(["Visitors", "Users", "Visits", "Attendances"])("bloqueia acesso direto do viewer a %s", (page) => {
+  it.each(["Visitors", "Users", "Attendances"])("bloqueia acesso direto do viewer a %s", (page) => {
     Object.assign(authState, { isAuth: true, isInitializing: false });
     profileState.user = { role: "viewer" };
     renderRoutes(`/Admin/${page}`);
@@ -38,6 +38,8 @@ describe("ProtectRouter", () => {
 
   it.each([
     ["/Admin", "Dashboard protegido"],
+    ["/Admin/Visits", "Página restrita"],
+    ["/admin/visits/", "Página restrita"],
     ["/Admin/Configurations", "Configurações protegidas"],
     ["/Singout", "Sair da conta"],
   ])("permite ao viewer acessar %s", (path, content) => {

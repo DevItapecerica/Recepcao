@@ -22,7 +22,7 @@ const ProtectRouter = () => {
 
   if (!isAuth) return <Navigate to="/" replace />;
 
-  const viewerPaths = ["/admin", "/admin/configurations", "/singout"];
+  const viewerPaths = ["/admin", "/admin/visits", "/admin/configurations", "/singout"];
   if (user?.role === "viewer" && !viewerPaths.includes(pathname.replace(/\/+$/, "").toLowerCase())) {
     return <Navigate to="/Admin" replace />;
   }

@@ -28,7 +28,7 @@ const permissions = {
   },
 
   visits: {
-    viewer: [],
+    viewer: ["GET"],
     user: ["GET", "POST"],
     recepcionist: ["GET", "POST"],
     admin: ["GET", "POST"],

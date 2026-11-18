@@ -10,7 +10,7 @@ const adminItems = [
   ["Painel", "/Admin", ["user", "recepcionist", "admin", "superadmin", "viewer"]],
   ["Visitantes", "/Admin/Visitors", ["user", "recepcionist", "admin", "superadmin"]],
   ["Usuários", "/Admin/Users", ["admin", "superadmin"]],
-  ["Visitas", "/Admin/Visits", ["user", "recepcionist", "admin", "superadmin"]],
+  ["Visitas", "/Admin/Visits", ["user", "recepcionist", "admin", "superadmin", "viewer"]],
   ["Atendimentos", "/Admin/Attendances", ["recepcionist", "admin", "superadmin"]],
   ["Configurações", "/Admin/Configurations", ["user", "recepcionist", "admin", "superadmin", "viewer"]],
 ];
