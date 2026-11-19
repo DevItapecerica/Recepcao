@@ -5,10 +5,11 @@ import { PrimeReactProvider } from "primereact/api";
 import { ToastProvider } from "./toast/ToastProvider";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "../queryClient";
+import { primeReactConfig } from "../config/primeReact";
 
 const UseProviders = ({ children }) => {
   return (
-    <PrimeReactProvider>
+    <PrimeReactProvider value={primeReactConfig}>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <ToastProvider>

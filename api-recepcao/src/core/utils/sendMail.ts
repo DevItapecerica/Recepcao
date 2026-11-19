@@ -32,10 +32,9 @@ export async function sendMail(to: string, subject: string, text: string): Promi
     }
 
     return true;
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Falha desconhecida no SMTP";
-    console.error(`[E-MAIL NÃO ENVIADO] ${message}`);
-    console.error(`[ACESSO PELO TERMINAL]\nDestinatário: ${to}\nAssunto: ${subject}\n${text}`);
+  } catch {
+    // Não registrar o corpo do e-mail nem erros SMTP que possam conter tokens.
+    console.error("[E-MAIL NÃO ENVIADO] Falha no envio. Verifique a configuração e a disponibilidade do SMTP.");
     return false;
   }
 }
