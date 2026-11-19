@@ -5,14 +5,10 @@ import { rankVisitors } from "../../domain/repositories/visit/visit.repository.j
 import { IUserRepository } from "../../domain/repositories/user/user.repository.js";
 import { IVisitorRepository } from "../../domain/repositories/visitor/visitor.repository.js";
 import { AppError } from "../../core/types/errorTypes.js";
-import { ISubjectRepository } from "../../domain/repositories/subject/subject.repository.js";
-import { IAttendantRepository } from "../../domain/repositories/attendant/attendant.repository.js";
 import { VisitsService } from "./VisitsService.js";
 
 const unusedUserRepository = {} as IUserRepository;
 const unusedVisitorRepository = {} as IVisitorRepository;
-const unusedSubjectRepository = {} as ISubjectRepository;
-const unusedAttendantRepository = {} as IAttendantRepository;
 
 test("returns dashboard totals and the most frequent visitor", async () => {
   const visitRepository = {
@@ -31,8 +27,6 @@ test("returns dashboard totals and the most frequent visitor", async () => {
     visitRepository,
     unusedUserRepository,
     unusedVisitorRepository,
-    unusedSubjectRepository,
-    unusedAttendantRepository,
   );
 
   const result = await service.getDashboard({
@@ -62,8 +56,6 @@ test("returns an empty dashboard without treating it as an error", async () => {
     visitRepository,
     unusedUserRepository,
     unusedVisitorRepository,
-    unusedSubjectRepository,
-    unusedAttendantRepository,
   );
 
   const result = await service.getDashboard({
@@ -80,8 +72,6 @@ test("rejects an invalid dashboard date range", async () => {
     {} as IVisitRepository,
     unusedUserRepository,
     unusedVisitorRepository,
-    unusedSubjectRepository,
-    unusedAttendantRepository,
   );
 
   await assert.rejects(

@@ -45,15 +45,12 @@ export class VisitController {
       throw new AppError("Usuário não autenticado", 401, "UNAUTHORIZED");
     }
 
-const result = await this.visitsService.createVisits({
-  creator_uuid: request.user.uuid,
-  visitor_uuid: request.body.visitor_uuid,
-  subject_uuid: request.body.subject_uuid,
-  attendant_uuid: request.body.attendant_uuid ?? null,
-  subject: request.body.subject ?? null,
-  date: request.body.date,
-});
-
+    const result = await this.visitsService.createVisits({
+      creator_uuid: request.user.uuid,
+      visitor_uuid: request.body.visitor_uuid,
+      subject: request.body.subject,
+date: request.body.date,
+    });
 
     reply.status(201).send({ message: result.message, visits: result.visits });
   };

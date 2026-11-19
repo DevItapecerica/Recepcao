@@ -1,7 +1,6 @@
 import VisitorsTable from "./table/VisitorsTable";
 import OccurrencesModal from "./modal/OccurrencesModal";
 import VisitorsModal from "./modal/VisitorsModal";
-import SubjectsModal from "./modal/SubjectsModal";
 import VisitorsDeleteModal from "./modal/VisitorsDeleteModal";
 
 import { useState } from "react";
@@ -13,21 +12,13 @@ const Visitors = () => {
   const [isEditVisible, setIsEditVisible] = useState(false);
   const [isExcludeVisible, setIsExcludeVisible] = useState(false);
   const [isOccurrenceVisible, setIsOccurrenceVisible] = useState(false);
-const [isSubjectsVisible, setIsSubjectsVisible] = useState(false);
+
   // 2. Crie o estado para o novo modal de detalhes
   const [isDetailsVisible, setIsDetailsVisible] = useState(false);
   const [visitorTarget, setVisitorTarget] = useState(null);
 
   return (
     <>
-    <div className="flex justify-end mb-4">
-
-</div>
-
-<SubjectsModal
-  visible={isSubjectsVisible}
-  onHide={() => setIsSubjectsVisible(false)}
-/>
       <VisitorsModal
         visible={isEditVisible}
         onHide={() => setIsEditVisible(false)}

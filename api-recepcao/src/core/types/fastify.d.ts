@@ -13,9 +13,7 @@ export type PermissionResource =
   | "users"
   | "visitors"
   | "visits"
-  | "occurrences"
-  | "subjects"
-  | "attendants";
+  | "occurrences";
 
 declare module "fastify" {
   interface FastifyRequest {

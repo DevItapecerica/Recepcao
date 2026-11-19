@@ -1,4 +1,4 @@
-
+// middlewares/checkPermissions.ts
 import { FastifyRequest } from "fastify";
 import { AppError } from "../types/errorTypes.js";
 import { UserRole } from "../../domain/entities/User.js";
@@ -18,7 +18,6 @@ const permissions = {
     admin: ["GET", "POST", "PUT"],
     superadmin: ["GET", "POST", "PUT", "DELETE"],
   },
-
   visitors: {
     viewer: [],
     user: ["GET", "POST", "PUT"],
@@ -26,7 +25,6 @@ const permissions = {
     admin: ["GET", "POST", "PUT"],
     superadmin: ["GET", "POST", "PUT", "DELETE"],
   },
-
   visits: {
     viewer: ["GET"],
     user: ["GET", "POST"],
@@ -34,28 +32,11 @@ const permissions = {
     admin: ["GET", "POST"],
     superadmin: ["GET", "POST", "PUT", "DELETE"],
   },
-
   occurrences: {
     viewer: [],
     user: ["GET"],
     recepcionist: ["GET", "POST", "PUT", "DELETE"],
     admin: ["GET", "POST", "PUT", "DELETE"],
-    superadmin: ["GET", "POST", "PUT", "DELETE"],
-  },
-
-  subjects: {
-    viewer: [],
-    user: ["GET"],
-    recepcionist: ["GET"],
-    admin: ["GET", "POST", "PUT"],
-    superadmin: ["GET", "POST", "PUT", "DELETE"],
-  },
-
-  attendants: {
-    viewer: [],
-    user: ["GET"],
-    recepcionist: ["GET"],
-    admin: ["GET", "POST", "PUT"],
     superadmin: ["GET", "POST", "PUT", "DELETE"],
   },
 } as const;

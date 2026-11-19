@@ -21,7 +21,6 @@ const Dashboard = lazy(() => import("./pages/admin/dashboard/Dashboard"));
 const Visitors = lazy(() => import("./pages/admin/visitors/Visitors"));
 const Users = lazy(() => import("./pages/admin/users/Users"));
 const VisitsByDayTable = lazy(() => import("./pages/admin/Visits/Visits"));
-const Attendances = lazy(() => import("./pages/admin/attendances/Attendances"));
 const Config = lazy(() => import("./pages/admin/config/Config"));
 
 function App() {
@@ -45,7 +44,6 @@ function App() {
                 <Route path="Visitors" element={<Visitors />} />
                 <Route path="Users" element={<Users />} />
                 <Route path="Visits" element={<VisitsByDayTable />} />
-                <Route path="Attendances" element={<Attendances />} />
                 <Route path="Configurations" element={<Config />} />
               </Route>
 

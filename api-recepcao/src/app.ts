@@ -1,14 +1,13 @@
-
 import { FastifyInstance } from "fastify";
 import { loginRouter } from "./interface/router/loginRouter.js";
 import { userRouter } from "./interface/router/userRouter.js";
 import { visitorRouter } from "./interface/router/visitorRouter.js";
 import { visitsRouter } from "./interface/router/visitsRouter.js";
 import { occurrencesRouter } from "./interface/router/occurrencesRouter.js";
-import { subjectsRouter } from "./interface/router/subjectsRouter.js";
-import { attendantsRouter } from "./interface/router/attendantsRouter.js";
 
 const bootstrap = (fastify: FastifyInstance) => {
+
+
   fastify.register(loginRouter, {
     prefix: "/login",
   });
@@ -23,19 +22,12 @@ const bootstrap = (fastify: FastifyInstance) => {
 
   fastify.register(visitsRouter, {
     prefix: "/visits",
-  });
+  });;
 
   fastify.register(occurrencesRouter, {
     prefix: "/occurrences",
   });
 
-  fastify.register(subjectsRouter, {
-    prefix: "/subjects",
-  });
+}
 
-  fastify.register(attendantsRouter, {
-    prefix: "/attendants",
-  });
-};
-
-export default bootstrap;
+export default bootstrap
