@@ -52,7 +52,7 @@ export default function VisitsTable() {
               }}
               dateFormat="dd/mm/yy"
               className="w-80"
-              placeholder="Buscar por visitante, assunto ou criador"
+              placeholder="Filtrar por data (dd/mm/aaaa)"
               manualInput
             />
             <Button

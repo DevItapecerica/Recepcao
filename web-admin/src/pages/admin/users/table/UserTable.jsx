@@ -61,6 +61,7 @@ const UserTable = ({ setEditIsVisible, setUserTarget }) => {
   };
 
   const roleLabels = {
+    viewer: "Visualizador",
     admin: "Administrador",
     user: "Usuário",
     recepcionist: "Recepcionista",

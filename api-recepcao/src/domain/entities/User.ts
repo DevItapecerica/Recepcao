@@ -1,6 +1,6 @@
 import { cpf as cpfValidator } from "cpf-cnpj-validator";
 
-export type UserRole = "admin" | "user" | "recepcionist" | "superadmin";
+export type UserRole = "admin" | "user" | "recepcionist" | "superadmin" | "viewer";
 
 export interface UserProps {
   first_name: string; last_name: string; username: string; email: string;

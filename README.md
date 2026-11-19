@@ -1,5 +1,96 @@
 # Project Readme
 
+## Perfis de acesso e VIEWER (Visualizador)
+
+O perfil **VIEWER**, identificado como `viewer` no código e na API e como **Visualizador** no cadastro de usuários, permite acompanhar o painel e consultar visitas sem alterar os registros.
+
+### O que o VIEWER vê
+
+As mesmas opções são exibidas no menu principal e no menu móvel:
+
+| Aba | Caminho | Conteúdo e permissões |
+| :--- | :--- | :--- |
+| Painel | `/Admin` | Indicadores de visitas, visitantes únicos, visitante mais frequente, ranking de visitantes e gráficos por dia da semana e horário. Somente consulta. |
+| Visitas | `/Admin/Visits` | Lista com visitante, assunto, responsável pelo registro e data/hora da visita. Permite consultar, filtrar por data e navegar pelas páginas dos resultados. Não permite criar, editar ou excluir visitas. |
+| Configurações | `/Admin/Configurations` | Exibe o usuário da conta. Os campos de senha e o botão **Alterar senha** ficam desabilitados para VIEWER. |
+
+O usuário também pode alternar o tema e sair da conta. As abas **Visitantes** e **Usuários** não aparecem para VIEWER. Tentativas de acessar essas páginas diretamente pela URL são redirecionadas para o Painel.
+
+A consulta de visitas mostra informações do visitante associadas aos registros, mas não concede acesso ao cadastro de visitantes.
+
+### Comparação das abas por perfil
+
+Esta tabela descreve a visibilidade no menu; a autorização das operações também é verificada pela API.
+
+| Aba | viewer | user | recepcionist | admin | superadmin |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| Painel | Sim | Sim | Sim | Sim | Sim |
+| Visitas | Sim | Sim | Sim | Sim | Sim |
+| Configurações | Sim | Sim | Sim | Sim | Sim |
+| Visitantes | Não | Sim | Sim | Sim | Sim |
+| Usuários | Não | Não | Não | Sim | Sim |
+
+A inclusão de Visitas para VIEWER preserva as permissões dos demais perfis.
+
+A versão atual da `develop` não inclui a aba Atendimentos nem os cadastros de Assuntos e Atendentes; por isso, eles não fazem parte da tabela de acesso acima.
+
+### Autorização na API
+
+Além da visibilidade do menu e da proteção das páginas, o middleware `checkPermissions` autoriza VIEWER somente para `GET` nos recursos `dashboard` e `visits`:
+
+| Método e endpoint | Acesso do VIEWER |
+| :--- | :--- |
+| `GET /api/v1/visits/dashboard` | Consultar os indicadores do painel. |
+| `GET /api/v1/visits/` | Consultar a lista de visitas. |
+| `GET /api/v1/visits/visitor/{uuid}` | Consultar o histórico de visitas de um visitante. |
+| `POST /api/v1/visits/` | Bloqueado: não pode registrar visitas. |
+
+Os métodos `POST`, `PUT`, `PATCH` e `DELETE` não são autorizados para VIEWER nos recursos `dashboard` e `visits`. A matriz de permissões não cria endpoints: métodos sem rota implementada continuam indisponíveis.
+
+VIEWER também não tem permissão para os recursos `users`, `visitors` e `occurrences`, nem mesmo para leitura. Uma operação rejeitada pelo middleware retorna **403**, com código `FORBIDDEN`.
+
+Autenticação, ativação e gerenciamento da sessão seguem seus próprios fluxos. A alteração da senha pelo endpoint `POST /api/v1/login/alterpwd` é bloqueada para VIEWER também no serviço de usuários, além do bloqueio na tela de Configurações.
+
+### Como atribuir o perfil
+
+Na aba **Usuários**, um administrador ou superadministrador pode selecionar **Visualizador** no campo de perfil ao cadastrar ou editar uma conta, respeitando as regras existentes de gerenciamento de usuários. Na API, o valor deve ser enviado em minúsculas: `"role": "viewer"`.
+
+O banco de dados deve ter a migration `20261116100000-add-viewer-role.ts` aplicada para aceitar o valor `viewer` na coluna `users.role`. Em instalações ainda não atualizadas, utilize o fluxo de migrations do projeto a partir de `api-recepcao`:
+
+```sh
+npm run migrate
+```
+
+Esse comando aplica as migrations pendentes do projeto. A reversão da migration do VIEWER exige reatribuir previamente as contas que usam esse perfil.
+
+### Calendários em português
+
+Todos os calendários do sistema usam português do Brasil: filtro da lista de visitas, cadastro de visita e criação/edição de ocorrências. Os meses, dias da semana, botões e rótulos de navegação estão traduzidos; as datas usam `dd/mm/aaaa` e os campos com horário usam o formato de 24 horas.
+
+A configuração fica centralizada em `web-admin/src/config/primeReact.js` e é aplicada pelo `PrimeReactProvider` em `UseProviders.jsx`, inclusive aos novos calendários que não definirem outro idioma.
+
+### Falhas no envio de ativação
+
+Quando o envio do e-mail falha, o sistema retorna o estado de falha para o fluxo de ativação e registra apenas uma mensagem genérica de diagnóstico. O corpo do e-mail, o link de ativação e o erro bruto do SMTP não são registrados nos logs. Corrija o SMTP e utilize o reenvio de ativação pelo gerenciamento de usuários.
+
+### Testes de acesso, calendários e logs
+
+Os testes de regressão cobrem a exibição das abas, o acesso direto às páginas permitidas, o bloqueio das páginas restritas e as permissões de leitura e escrita na API. As descrições desses testes estão em português.
+
+Execute a partir de `web-admin`:
+
+```sh
+npm test -- src/pages/nav/Nav.test.jsx src/middleware/ProtectRouter.test.jsx src/config/primeReact.test.jsx
+```
+
+Execute a partir de `api-recepcao`:
+
+```sh
+node --import tsx --test src/core/middleware/checkPermissions.test.ts src/core/utils/sendMail.test.ts
+```
+
+Arquivos de referência: `web-admin/src/pages/nav/Nav.jsx`, `web-admin/src/middleware/ProtectRouter.jsx`, `web-admin/src/pages/admin/Visits/Visits.jsx`, `web-admin/src/pages/admin/config/Config.jsx`, `api-recepcao/src/core/middleware/checkPermissions.ts` e `api-recepcao/src/application/service/UserService.ts`.
+
 ## Web-App
 
 ### Description
@@ -237,7 +328,7 @@ Cria um novo usuário no sistema.
 | :--- | :--- | :--- | :--- |
 | `first_name` | string | Sim | Primeiro nome do usuário. |
 | `last_name` | string | Sim | Sobrenome do usuário. |
-| `role` | string | Sim | Nível de permissão (ex: "Admin", "User"). |
+| `role` | string | Sim | Perfil de acesso: `viewer`, `user`, `recepcionist`, `admin` ou `superadmin` (valores em minúsculas). |
 | `email` | string | Sim | E-mail do usuário (deve ser único). |
 | `cpf` | string | Sim | CPF do usuário (deve ser único). |
 | `password` | string | Não | Senha inicial. Se não for fornecida, uma padrão pode ser gerada, só leva em conta a criação de uma senha sem ser padrão caso em ambiente de desenvolvimento para configurar a aplicação. |

@@ -1,4 +1,4 @@
-// .sequelizerc
+// Explicit CommonJS configuration for this ESM project.
 const path = require("path");
 
 module.exports = {

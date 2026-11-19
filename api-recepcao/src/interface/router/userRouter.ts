@@ -11,7 +11,7 @@ const userSchema = {
   properties: {
     first_name: { type: "string", minLength: 2, maxLength: 100 },
     last_name: { type: "string", minLength: 2, maxLength: 100 },
-    role: { type: "string", enum: ["user", "recepcionist", "admin", "superadmin"] },
+    role: { type: "string", enum: ["user", "recepcionist", "admin", "superadmin", "viewer"] },
     email: { type: "string", format: "email", maxLength: 254 },
     password: { type: "string" },
     cpf: { type: "string", minLength: 11, maxLength: 14 },
@@ -25,7 +25,7 @@ const userUpdateSchema = {
   properties: {
     first_name: { type: "string", minLength: 2, maxLength: 100 },
     last_name: { type: "string", minLength: 2, maxLength: 100 },
-    role: { type: "string", enum: ["user", "recepcionist", "admin", "superadmin"] },
+    role: { type: "string", enum: ["user", "recepcionist", "admin", "superadmin", "viewer"] },
     email: { type: "string", format: "email", maxLength: 254 },
   },
   additionalProperties: false,

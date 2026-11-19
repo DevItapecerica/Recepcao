@@ -48,12 +48,12 @@ export class UserService {
     // Validações
     if (!this.userPolicy.isValidRole(data.role)) {
       throw new AppError(
-        "the field 'role' must be 'admin', 'user', 'recepcionist' or 'superadmin'",
+        "the field 'role' must be 'admin', 'user', 'recepcionist', 'superadmin' or 'viewer'",
         400,
       );
     }
 
-    if (actorRole === "admin" && !["user", "recepcionist"].includes(data.role)) {
+    if (actorRole === "admin" && !["user", "recepcionist", "viewer"].includes(data.role)) {
       throw new AppError("Administrador não pode atribuir este papel", 403, "ROLE_ESCALATION");
     }
 
@@ -99,11 +99,11 @@ export class UserService {
 
     if (!this.userPolicy.isValidRole(data.role)) {
       throw new AppError(
-        "the field 'role' must be 'admin', 'user', 'recepcionist' or 'superadmin'",
+        "the field 'role' must be 'admin', 'user', 'recepcionist', 'superadmin' or 'viewer'",
         400,
       );
     }
-    if (actorRole === "admin" && !["user", "recepcionist"].includes(data.role)) {
+    if (actorRole === "admin" && !["user", "recepcionist", "viewer"].includes(data.role)) {
       throw new AppError("Administrador não pode atribuir este papel", 403, "ROLE_ESCALATION");
     }
     if (actorRole === "admin" && ["admin", "superadmin"].includes(user.role)) {
@@ -149,7 +149,7 @@ export class UserService {
     const user = await this.userRepository.findUserById(uuid);
     if (!user) throw new AppError("Usuário não encontrado", 404, "NOT_FOUND");
     if (!user.firstLogin) throw new AppError("Usuário já está ativo", 409, "USER_ALREADY_ACTIVE");
-    if (actorRole === "admin" && !["user", "recepcionist"].includes(user.role)) {
+    if (actorRole === "admin" && !["user", "recepcionist", "viewer"].includes(user.role)) {
       throw new AppError("Administrador não pode gerenciar este papel", 403, "ROLE_ESCALATION");
     }
     if (!this.activationService) throw new AppError("Ativação indisponível", 500, "ACTIVATION_UNAVAILABLE");
@@ -187,6 +187,10 @@ export class UserService {
 
     if (!user) {
       throw new AppError("Usuário não encontrado", 404, "NOT_FOUND");
+    }
+
+    if (user.role === "viewer") {
+      throw new AppError("Permissão negada", 403, "FORBIDDEN");
     }
 
     const valid =

@@ -19,12 +19,7 @@ export class ActivationService {
     const hash = createHash("sha256").update(token).digest("hex");
     await this.activations.replaceForUser(userId, hash, new Date(Date.now() + ACTIVATION_DURATION_MS));
     const frontendUrl = CORS_ORIGIN.split(",")[0].trim().replace(/\/$/, "");
-    try {
-      await sendMail(user.email, "Ative seu acesso à Recepção", `Defina sua senha em: ${frontendUrl}/Activate?token=${encodeURIComponent(token)}\n\nEste link expira em 24 horas.`);
-      return true;
-    } catch(error) {
-      throw new AppError("Ativação indisponível", 500, "ACTIVATION_UNAVAILABLE", error);
-    }
+    return sendMail(user.email, "Ative seu acesso à Recepção", `Defina sua senha em: ${frontendUrl}/Activate?token=${encodeURIComponent(token)}\n\nEste link expira em 24 horas.`);
   }
 
   async activate(token: string, password: string): Promise<void> {

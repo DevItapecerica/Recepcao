@@ -1,24 +1,40 @@
 import nodemailer from "nodemailer";
 import { MAIL_ADRESS, MAIL_HOST, MAIL_PASSWORD, MAIL_PORT, MAIL_SECURE } from "../config/env.js";
 
-export async function sendMail(to: string, subject: string, text: string) {
+export async function sendMail(to: string, subject: string, text: string): Promise<boolean> {
+  try {
+    if (!MAIL_HOST || !MAIL_ADRESS || !MAIL_PASSWORD || !Number.isInteger(MAIL_PORT) || MAIL_PORT < 1 || MAIL_PORT > 65535) {
+      throw new Error("SMTP sem configuração válida. Confira MAIL_HOST, MAIL_ADRESS, MAIL_PASSWORD e MAIL_PORT.");
+    }
 
-  const transporter = nodemailer.createTransport({
-    host: MAIL_HOST, // servidor de email
-    port: MAIL_PORT,
-    secure: MAIL_SECURE,
-    auth: {
-      user: MAIL_ADRESS,
-      pass: MAIL_PASSWORD,
-    },
-  });
+    const transporter = nodemailer.createTransport({
+      host: MAIL_HOST,
+      port: MAIL_PORT,
+      secure: MAIL_SECURE,
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
+      auth: {
+        user: MAIL_ADRESS,
+        pass: MAIL_PASSWORD,
+      },
+    });
 
-  const mailOptions = {
-    from: '"Tecnologia - Itapecerica da Serra" <miguel.moraes@itapecerica.sp.gov.br>',
-    to,
-    subject,
-    text,
-  };
+    const info = await transporter.sendMail({
+      from: `"Tecnologia - Itapecerica da Serra" <${MAIL_ADRESS}>`,
+      to,
+      subject,
+      text,
+    });
 
-  return transporter.sendMail(mailOptions);
+    if (info.rejected.length > 0 || info.accepted.length === 0) {
+      throw new Error("O servidor SMTP rejeitou o destinatário.");
+    }
+
+    return true;
+  } catch {
+    // Não registrar o corpo do e-mail nem erros SMTP que possam conter tokens.
+    console.error("[E-MAIL NÃO ENVIADO] Falha no envio. Verifique a configuração e a disponibilidade do SMTP.");
+    return false;
+  }
 }
