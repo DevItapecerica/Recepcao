@@ -40,11 +40,26 @@ test("admin can create and edit viewer accounts", async () => {
   assert.equal((await service.alterUser(uuid, data, "admin")).user.role, "viewer");
 });
 
-test("viewer cannot change the password in read-only settings", async () => {
-  const repository = repositoryFor(await makeUser("viewer"));
-  const service = new UserService(repository, new UserPolicyDomainService(repository));
-  await assert.rejects(service.alterPassword(uuid, "SenhaAntiga1!", "SenhaNovaForte2@"), { code: "FORBIDDEN" });
-});
+for (const role of ["viewer", "user", "recepcionist", "admin", "superadmin"] as const) {
+  test(role + " pode alterar a própria senha, validando a senha atual e revogando as sessões", async () => {
+    const user = await makeUser(role);
+    const originalHash = user.passwordHash;
+    const repository = repositoryFor(user);
+    let revokedUserId = "";
+    const sessions = {
+      revokeAllForUser: async (userId: string) => { revokedUserId = userId; },
+    } as IUserSessionRepository;
+    const service = new UserService(repository, new UserPolicyDomainService(repository), undefined, sessions);
+
+    await assert.rejects(service.alterPassword(uuid, "SenhaIncorreta1!", "SenhaNovaForte2@"), { code: "UNAUTHORIZED" });
+    assert.equal(user.passwordHash, originalHash);
+    assert.equal(revokedUserId, "");
+
+    await service.alterPassword(uuid, "SenhaAntiga1!", "SenhaNovaForte2@");
+    assert.equal(await bcrypt.compare("SenhaNovaForte2@", user.passwordHash!), true);
+    assert.equal(revokedUserId, uuid);
+  });
+}
 
 test("prevents self deletion and deletion of the last superadmin", async () => {
   const user = await makeUser("superadmin");

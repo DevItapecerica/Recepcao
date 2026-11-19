@@ -189,10 +189,6 @@ export class UserService {
       throw new AppError("Usuário não encontrado", 404, "NOT_FOUND");
     }
 
-    if (user.role === "viewer") {
-      throw new AppError("Permissão negada", 403, "FORBIDDEN");
-    }
-
     const valid =
       user.passwordHash && (await bcrypt.compare(oldPassword, user.passwordHash));
 

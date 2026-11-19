@@ -12,7 +12,7 @@ As mesmas opções são exibidas no menu principal e no menu móvel:
 | :--- | :--- | :--- |
 | Painel | `/Admin` | Indicadores de visitas, visitantes únicos, visitante mais frequente, ranking de visitantes e gráficos por dia da semana e horário. Somente consulta. |
 | Visitas | `/Admin/Visits` | Lista com visitante, assunto, responsável pelo registro e data/hora da visita. Permite consultar, filtrar por data e navegar pelas páginas dos resultados. Não permite criar, editar ou excluir visitas. |
-| Configurações | `/Admin/Configurations` | Exibe o usuário da conta. Os campos de senha e o botão **Alterar senha** ficam desabilitados para VIEWER. |
+| Configurações | `/Admin/Configurations` | Exibe o usuário da conta e permite alterar a própria senha para todos os perfis autenticados, incluindo VIEWER. O nome de usuário permanece somente para consulta. |
 
 O usuário também pode alternar o tema e sair da conta. As abas **Visitantes** e **Usuários** não aparecem para VIEWER. Tentativas de acessar essas páginas diretamente pela URL são redirecionadas para o Painel.
 
@@ -49,7 +49,7 @@ Os métodos `POST`, `PUT`, `PATCH` e `DELETE` não são autorizados para VIEWER 
 
 VIEWER também não tem permissão para os recursos `users`, `visitors` e `occurrences`, nem mesmo para leitura. Uma operação rejeitada pelo middleware retorna **403**, com código `FORBIDDEN`.
 
-Autenticação, ativação e gerenciamento da sessão seguem seus próprios fluxos. A alteração da senha pelo endpoint `POST /api/v1/login/alterpwd` é bloqueada para VIEWER também no serviço de usuários, além do bloqueio na tela de Configurações.
+Autenticação, ativação e gerenciamento da sessão seguem seus próprios fluxos. A alteração da própria senha pelo endpoint `POST /api/v1/login/alterpwd` é permitida a todos os perfis autenticados, incluindo VIEWER. A API usa a identidade da sessão, exige a senha atual e uma nova senha forte e revoga as sessões após a alteração. Essa permissão não permite ao VIEWER modificar visitas ou gerenciar outros usuários.
 
 ### Como atribuir o perfil
 

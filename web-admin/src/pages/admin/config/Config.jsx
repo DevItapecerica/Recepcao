@@ -18,7 +18,6 @@ const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{10,12
 const Config = () => {
   const { showToast } = useToast();
   const { user } = useProfile();
-  const readOnly = user?.role === "viewer";
   const { Logout } = useAuth();
   const navigate = useNavigate();
 
@@ -38,7 +37,6 @@ const Config = () => {
 
   // Submissão do formulário
   const onSubmit = async (data) => {
-    if (readOnly) return;
     try {
       const response = await alterPassword(data);
       showToast(
@@ -92,7 +90,6 @@ const Config = () => {
                 rules={{ required: "Informe a senha atual" }}
                 render={({ field }) => (
                   <Password
-                    disabled={readOnly}
                     inputId="old_password"
                     {...field}
                     onChange={(e) => field.onChange(e.target.value)}
@@ -116,7 +113,6 @@ const Config = () => {
                 rules={{ required: "Informe a nova senha", validate: (value) => strongPassword.test(value) || "Use 10 caracteres com maiúscula, minúscula, número e símbolo" }}
                 render={({ field }) => (
                   <Password
-                    disabled={readOnly}
                     inputId="new_password"
                     {...field}
                     onChange={(e) => field.onChange(e.target.value)}
@@ -140,7 +136,6 @@ const Config = () => {
                 rules={{ required: "Confirme a nova senha", validate: (value) => value === watch("new_password") || "As senhas não coincidem" }}
                 render={({ field }) => (
                   <Password
-                    disabled={readOnly}
                     inputId="confirm_password"
                     {...field}
                     onChange={(e) => field.onChange(e.target.value)}
@@ -161,7 +156,7 @@ const Config = () => {
               className="btn-primary w-full"
               type="submit"
               loading={isSubmitting}
-              disabled={readOnly || isSubmitting}
+              disabled={isSubmitting}
             />
           </div>
         </form>
